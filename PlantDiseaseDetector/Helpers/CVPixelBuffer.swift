@@ -8,10 +8,11 @@
 import UIKit
 
 extension CVPixelBuffer {
+    private static let context = CIContext()
+    
     func toUIImage() -> UIImage? {
         let ciImage = CIImage(cvPixelBuffer: self)
-        let context = CIContext()
-        if let cgImage = context.createCGImage(ciImage, from: ciImage.extent) {
+        if let cgImage = CVPixelBuffer.context.createCGImage(ciImage, from: ciImage.extent) {
             return UIImage(cgImage: cgImage)
         }
         
