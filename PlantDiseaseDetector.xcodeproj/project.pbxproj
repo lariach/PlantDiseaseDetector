@@ -10,9 +10,22 @@
 		A5E76A9C2DF04574009536EB /* PlantDiseaseDetector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlantDiseaseDetector.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5D4028C32DFC03A600EC36EB /* Exceptions for "PlantDiseaseDetector" folder in "PlantDiseaseDetector" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = A5E76A9B2DF04574009536EB /* PlantDiseaseDetector */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A5E76A9E2DF04574009536EB /* PlantDiseaseDetector */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5D4028C32DFC03A600EC36EB /* Exceptions for "PlantDiseaseDetector" folder in "PlantDiseaseDetector" target */,
+			);
 			path = PlantDiseaseDetector;
 			sourceTree = "<group>";
 		};
@@ -252,8 +265,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PlantDiseaseDetector/Preview Content\"";
+				DEVELOPMENT_TEAM = 35PK524L6R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlantDiseaseDetector/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Used for live plant detection";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -280,8 +296,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"PlantDiseaseDetector/Preview Content\"";
+				DEVELOPMENT_TEAM = 35PK524L6R;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PlantDiseaseDetector/Info.plist;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Used for live plant detection";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
