@@ -12,7 +12,11 @@ class PlantDiseaseService {
     private let model: PlantDisease
 
     init() {
-        self.model = try! PlantDisease(configuration: MLModelConfiguration())
+        do {
+            self.model = try PlantDisease(configuration: MLModelConfiguration())
+        } catch {
+            fatalError("Failed to initialize PlantDisease model: \(error.localizedDescription)")
+        }
     }
 
     func classify(image: UIImage?) -> (resultText: String, prediction: PlantDiseaseOutput?) {
