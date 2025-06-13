@@ -41,7 +41,10 @@ extension UIImage {
             bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue
         )
 
-        guard let ctx = context else { return nil }
+        guard let ctx = context else {
+            CVPixelBufferUnlockBaseAddress(buffer, [])
+            return nil
+        }
 
         ctx.translateBy(x: 0, y: CGFloat(height))
         ctx.scaleBy(x: 1.0, y: -1.0)
