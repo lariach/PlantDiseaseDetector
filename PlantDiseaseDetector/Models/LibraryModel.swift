@@ -8,8 +8,18 @@
 import Foundation
 import SwiftData
 
+enum DiseaseEnum: String {
+    case rust = "Rust"
+    case aphid = "Aphid"
+    case sunburn = "Sunburn"
+    case downyMildew = "Downy Mildew"
+    case leafSpot = "Leaf Spot"
+    case powderyMildew = "Powdery Mildew"
+    case healthy = "Healthy"
+}
+
 struct Disease: Identifiable {
-    let id = UUID()
+    var id: DiseaseEnum
     let name: String
     let imageName: String
     let overview: String
@@ -20,6 +30,7 @@ struct Disease: Identifiable {
 
 let diseaseList: [Disease] = [
     Disease(
+        id: .rust,
         name: "Rust",
         imageName: "image-rust",
         overview: "A fungal disease that primarily affects leaves, forming characteristic rust-colored pustules.",
@@ -33,6 +44,7 @@ let diseaseList: [Disease] = [
     ),
     
     Disease(
+        id: .aphid,
         name: "Aphid",
         imageName: "image-aphid",
         overview: "Small, soft-bodied insects that feed on plant sap and reproduce rapidly, often forming dense colonies.",
@@ -46,6 +58,7 @@ let diseaseList: [Disease] = [
     ),
     
     Disease(
+        id: .sunburn,
         name: "Sunburn",
         imageName: "image-sunburn",
         overview: "A non-infectious condition caused by too much direct sun, especially on tender or unacclimated plant parts.",
@@ -58,6 +71,7 @@ let diseaseList: [Disease] = [
     ),
     
     Disease(
+        id: .downyMildew,
         name: "Downy Mildew",
         imageName: "image-downeymildew",
         overview: "A water mold (oomycete) disease that affects leaves and sometimes stems, particularly in cool, humid environments.",
@@ -71,6 +85,7 @@ let diseaseList: [Disease] = [
     ),
     
     Disease(
+        id: .leafSpot,
         name: "Leaf Spot",
         imageName: "image-leafspot",
         overview: "A group of fungal or bacterial diseases that produce spots or lesions on foliage.",
@@ -84,6 +99,7 @@ let diseaseList: [Disease] = [
     ),
     
     Disease(
+        id: .powderyMildew,
         name: "Powdery Mildew",
         imageName: "image-powdery",
         overview: "A common fungal disease that forms a distinctive white powder on leaves, stems, and flowers.",
