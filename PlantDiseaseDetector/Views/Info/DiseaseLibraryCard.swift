@@ -11,13 +11,15 @@ import Foundation
 struct DiseaseLibraryCard: View {
     let disease: Disease
 
+    var cardSize: CGSize = CGSize(width: 180, height: 170)
+
     var body: some View {
         NavigationLink(destination: DiseaseDetailView(disease: disease)) {
             ZStack(alignment: .bottomLeading) {
                 Image(disease.imageName)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 180, height: 170)
+                    .frame(width: cardSize.width, height: cardSize.height)
                     .clipped()
                     .cornerRadius(16)
 
@@ -35,7 +37,7 @@ struct DiseaseLibraryCard: View {
                     .padding(.leading, 12)
                     .padding(.bottom, 12)
             }
-            .frame(width: 180, height: 170)
+            .frame(width: cardSize.width, height: cardSize.height)
             .cornerRadius(16)
             .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 4)
         }
