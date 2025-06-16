@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct InfoView: View{
+struct LibraryView: View{
     
     var body: some View{
         
@@ -17,5 +17,5 @@ struct InfoView: View{
 }
 
 #Preview {
-    InfoView()
+    LibraryView()
 }
