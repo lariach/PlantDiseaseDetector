@@ -306,6 +306,5 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         cornerLayer.path = path.cgPath
         parentView.layer.addSublayer(cornerLayer)
     }
-    
-    
+
 }

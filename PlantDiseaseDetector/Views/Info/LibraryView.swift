@@ -7,12 +7,35 @@
 
 import SwiftUI
 
-struct LibraryView: View{
-    
-    var body: some View{
-        
-        Text("ini info page")
-        
+struct LibraryView: View {
+    let columns = [
+        GridItem(.flexible(), spacing: 16),
+        GridItem(.flexible())
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Plant Disease Library")
+                        .font(.title)
+                        .bold()
+                        .foregroundColor(Color("color-font-green"))
+                        .padding(.horizontal)
+                        .padding(.top, 40)
+                    
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(diseaseList) { disease in
+                            DiseaseLibraryCard(disease: disease)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .padding(.top)
+            }
+            .background(Color("color-BgPage"))
+//            .navigationTitle("Plant Disease Library")
+        }
     }
 }
 

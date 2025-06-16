@@ -41,7 +41,7 @@ struct HowToTakePictureView: View {
                         Text("• Avoid messy or busy backgrounds.")
                         Text("• Hold your phone still to avoid blurriness.")
                     }
-                    .padding(8)
+                    .padding(20)
                     .font(.subheadline)
                     .foregroundColor(Color("color-font-green"))
                     .frame(maxWidth: .infinity)
