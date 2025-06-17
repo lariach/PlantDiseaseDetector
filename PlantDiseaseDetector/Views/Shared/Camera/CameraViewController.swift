@@ -264,6 +264,33 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         guard let data = photo.fileDataRepresentation(),
               let image = UIImage(data: data) else { return }
         
+        // calculate the crop rectangle based on frame coordinates
+        let frameWidth = view.bounds.width - 50
+        let originX = (view.bounds.width - frameWidth) / 2
+        let originY = (view.bounds.height - frameWidth) / 2
+        
+        let cropRect = CGRect(x: originX, y: originY, width: frameWidth, height: frameWidth)
+        
+        // convert cropRect from previewLayer coordinates to image coordinates
+        guard let previewLayer = self.previewLayer else {
+            delegate?.didCapture(image: image) // Fallback to original image
+            return
+        }
+        
+        let croppedImage: UIImage?
+        let photoOutputConnection = photoOutput.connection
+        if let videoPreviewLayerConnection = previewLayer.connection,
+           let outputConnection = photoOutputConnection as? AVCaptureConnection {
+            
+            let orientation = videoPreviewLayerConnection.videoOrientation
+            let captureDeviceResolution = photo.resolvedSettings.photoDimensions
+            
+            croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer, outputConnection: outputConnection, deviceResolution: captureDeviceResolution, deviceOrientation: orientation)
+        } else {
+            // Fallback if connections are not available
+            croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer) // Simpler crop if connections are complex
+        }
+        
         // Optional: Turn off torch after capture
         if captureDevice?.hasTorch == true {
             try? captureDevice?.lockForConfiguration()
@@ -274,13 +301,12 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         // 🧠 Optional: run classification here
         // classify(image) { result in ... }
         
+        if let realCroppedImage = croppedImage as? UIImage {
+            delegate?.didCapture(image: realCroppedImage)
+            return
+        }
+        
         delegate?.didCapture(image: image)
-    }
-    
-    // Optional: Classification stub
-    func classify(_ image: UIImage, completion: @escaping (String) -> Void) {
-        // Example only: Call your ML model here
-        completion("Healthy") // or "Diseased", etc.
     }
     
     func drawCornerFrame(over parentView: UIView) {

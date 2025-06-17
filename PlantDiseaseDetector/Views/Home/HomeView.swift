@@ -13,7 +13,7 @@ struct PlantDiagnosisView: View {
     let plantDiagnosis: PlantDiagnosis
     
     var body: some View {
-        
+        Text("Hello, World!")
     }
 }
 
