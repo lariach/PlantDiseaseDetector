@@ -14,5 +14,6 @@ struct PlantDiseaseDetectorApp: App {
             ContentView()
                 .preferredColorScheme(.light) // Force light mode for consistency
         }
+        .modelContainer(for: [PlantDiagnosis.self])
     }
 }

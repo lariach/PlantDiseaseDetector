@@ -12,6 +12,7 @@ import AVFoundation
 struct CameraView: UIViewControllerRepresentable {
     @Binding var image: UIImage?
     @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) var dismiss
 
     func makeUIViewController(context: Context) -> CameraViewController {
         let vc = CameraViewController()
@@ -34,11 +35,11 @@ struct CameraView: UIViewControllerRepresentable {
 
         func didCapture(image: UIImage) {
             parent.image = image
-            parent.presentationMode.wrappedValue.dismiss()
+            parent.dismiss()
         }
 
         func didCancel() {
-            parent.presentationMode.wrappedValue.dismiss()
+            parent.dismiss()
         }
     }
 }

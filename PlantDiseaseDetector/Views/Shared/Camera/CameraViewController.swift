@@ -17,23 +17,24 @@ protocol CameraViewControllerDelegate: AnyObject {
 }
 
 class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PHPickerViewControllerDelegate {
+    
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-            picker.dismiss(animated: true)
+        picker.dismiss(animated: true)
 
-            guard let itemProvider = results.first?.itemProvider,
-                  itemProvider.canLoadObject(ofClass: UIImage.self) else {
-                return
-            }
+        guard let itemProvider = results.first?.itemProvider,
+              itemProvider.canLoadObject(ofClass: UIImage.self) else {
+            return
+        }
 
-            itemProvider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
-                guard let self = self,
-                      let uiImage = image as? UIImage else { return }
+        itemProvider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+            guard let self = self,
+                  let uiImage = image as? UIImage else { return }
 
-                DispatchQueue.main.async {
-                    self.delegate?.didCapture(image: uiImage)
-                }
+            DispatchQueue.main.async {
+                self.delegate?.didCapture(image: uiImage)
             }
         }
+    }
     
     var captureSession: AVCaptureSession!
     var photoOutput: AVCapturePhotoOutput!
@@ -59,31 +60,70 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         }
     }
     
+//    func setupCamera() {
+//        captureSession = AVCaptureSession()
+//        captureSession.sessionPreset = .photo
+//        
+//        guard let camera = AVCaptureDevice.default(for: .video),
+//              let input = try? AVCaptureDeviceInput(device: camera),
+//              captureSession.canAddInput(input) else { return }
+//        
+//        captureDevice = camera
+//        captureSession.addInput(input)
+//        
+//        photoOutput = AVCapturePhotoOutput()
+//        captureSession.addOutput(photoOutput)
+//        
+//        previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+//        previewLayer.videoGravity = .resizeAspectFill
+//        previewLayer.frame = view.bounds
+//        view.layer.insertSublayer(previewLayer, at: 0)
+//        
+//        // ✅ Start session in background to avoid blocking UI
+//        DispatchQueue.global(qos: .userInitiated).async {
+//            self.captureSession.startRunning()
+//        }
+//    }
+    
     func setupCamera() {
-        captureSession = AVCaptureSession()
-        captureSession.sessionPreset = .photo
-        
-        guard let camera = AVCaptureDevice.default(for: .video),
-              let input = try? AVCaptureDeviceInput(device: camera),
-              captureSession.canAddInput(input) else { return }
-        
-        captureDevice = camera
-        captureSession.addInput(input)
-        
-        photoOutput = AVCapturePhotoOutput()
-        captureSession.addOutput(photoOutput)
-        
-        previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        previewLayer.videoGravity = .resizeAspectFill
-        previewLayer.frame = view.bounds
-        view.layer.insertSublayer(previewLayer, at: 0)
-        
-        // ✅ Start session in background to avoid blocking UI
         DispatchQueue.global(qos: .userInitiated).async {
-            self.captureSession.startRunning()
+            let session = AVCaptureSession()
+            session.sessionPreset = .photo
+
+            guard let camera = AVCaptureDevice.default(for: .video),
+                  let input = try? AVCaptureDeviceInput(device: camera),
+                  session.canAddInput(input) else {
+                print("❌ Failed to create camera input")
+                return
+            }
+
+            session.addInput(input)
+
+            let output = AVCapturePhotoOutput()
+            guard session.canAddOutput(output) else {
+                print("❌ Failed to add photo output")
+                return
+            }
+
+            session.addOutput(output)
+
+            DispatchQueue.main.async {
+                self.captureSession = session
+                self.photoOutput = output
+                self.captureDevice = camera
+
+                let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+                previewLayer.videoGravity = .resizeAspectFill
+                previewLayer.frame = self.view.bounds
+                self.previewLayer = previewLayer
+                self.view.layer.insertSublayer(previewLayer, at: 0)
+
+                DispatchQueue.global(qos: .userInitiated).async {
+                    session.startRunning()
+                }
+            }
         }
     }
-    
     
     func setupOverlay() {
         // Cancel Button
@@ -125,8 +165,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         button.layer.cornerRadius = 40
         button.addTarget(self, action: #selector(takePhoto), for: .touchUpInside)
         view.addSubview(button)
-        
-
     }
     
     @objc func takePhoto() {
@@ -203,8 +241,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         picker.delegate = self
         present(picker, animated: true)
     }
-
-
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
