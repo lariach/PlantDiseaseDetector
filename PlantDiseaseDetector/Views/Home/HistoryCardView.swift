@@ -12,30 +12,46 @@ struct HistoryCardView: View {
     
     var body: some View {
         NavigationLink(destination: HistoryDetailView(history: history)) {
+            
             HStack{
                 Image(history.image)
                     .resizable()
-                    .aspectRatio(1, contentMode: .fill) // square ratio
+                    .aspectRatio(1, contentMode: .fill) 
                     .frame(width: 120, height: 120)
                     .clipped()
                     .cornerRadius(12)
                     .padding(10)
 
-                
                 VStack (alignment: .leading, spacing: 5){
                     Text(history.name)
-                        .font(.system(size: 20, weight: .bold))
+                        .font(.headline)
+                        .fontWeight(.bold)
                         .foregroundColor(Color("color-font-green"))
-                    HStack{
+                    
+                    HStack {
                         Image(systemName: "clock")
+                            .font(.system(size: 14))
+                        
                         Text(
                             history.date
                                 .formatted(date: .abbreviated, time: .shortened)
                         )
+                        .font(.caption)
                     }
                     .foregroundColor(.black)
                     
                     Spacer()
+                    
+                    HStack {
+                        Spacer()
+                        
+                        Image(systemName: "trash")
+                            .foregroundColor(.red)
+                            .font(.system(size: 20))
+                            
+                    }
+                    .padding(.bottom, 15)
+                    .padding(.trailing, 10)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 20)
@@ -49,43 +65,7 @@ struct HistoryCardView: View {
         }
     }
 }
-            
-//            ZStack(alignment: .bottomLeading) {
-//                Image(disease.imageName)
-//                    .resizable()
-//                    .scaledToFill()
-//                    .frame(width: 180, height: 170)
-//                    .clipped()
-//                    .cornerRadius(16)
-//
-//                LinearGradient(
-//                    gradient: Gradient(colors: [Color.black.opacity(0.6), .clear]),
-//                    startPoint: .bottom,
-//                    endPoint: .top
-//                )
-//                .frame(height: 60)
-//                .cornerRadius(16)
-//
-//                Text(disease.name)
-//                    .font(.system(size: 14, weight: .semibold))
-//                    .foregroundColor(.white)
-//                    .padding(.leading, 12)
-//                    .padding(.bottom, 12)
-//            }
-//            .frame(width: 180, height: 170)
-//            .cornerRadius(16)
-//            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 4)
-//        }
-//        .buttonStyle(PlainButtonStyle()) // agar tidak ada efek biru klik
-//    }
-//}
-
 
 #Preview {
-    ZStack {
-        Color("color-BgPage")
-            .ignoresSafeArea()
-        HistoryCardView(history: historyList[0])
-            .padding()
-    }
+    ContentView()
 }

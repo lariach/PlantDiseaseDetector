@@ -18,67 +18,6 @@ struct Detection: Identifiable {
     var className: String
 }
 
-// convert normalized YOLO box to CGRect
-extension CGRect {
-    static func normalizedYoloToCGRect(cx: Float, cy: Float, width: Float, height: Float, imageWidth: CGFloat, imageHeight: CGFloat) -> CGRect {
-        let xCenter = CGFloat(cx) * imageWidth
-        let yCenter = CGFloat(cy) * imageHeight
-        let w = CGFloat(width) * imageWidth
-        let h = CGFloat(height) * imageHeight
-        
-        let x = xCenter - w / 2
-        let y = yCenter - h / 2
-        
-        return CGRect(x: x, y: y, width: w, height: h)
-    }
-}
-
-// convert UIImage to CVPixelBuffer
-extension UIImage {
-    func toCVPixelBuffer(targetSize: CGSize) -> CVPixelBuffer? {
-        let attrs = [
-            kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue,
-            kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue
-        ] as CFDictionary
-        var pixelBuffer: CVPixelBuffer?
-        
-        let width = Int(targetSize.width)
-        let height = Int(targetSize.height)
-        
-        let status = CVPixelBufferCreate(kCFAllocatorDefault,
-                                         width,
-                                         height,
-                                         kCVPixelFormatType_32BGRA,
-                                         attrs,
-                                         &pixelBuffer)
-        guard status == kCVReturnSuccess else {
-            return nil
-        }
-        
-        CVPixelBufferLockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
-        let pixelData = CVPixelBufferGetBaseAddress(pixelBuffer!)
-        
-        let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
-        let context = CGContext(data: pixelData,
-                                width: width,
-                                height: height,
-                                bitsPerComponent: 8,
-                                bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer!),
-                                space: rgbColorSpace,
-                                bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue) // BGRA
-        
-        context?.translateBy(x: 0, y: CGFloat(height))
-        context?.scaleBy(x: 1.0, y: -1.0)
-        
-        UIGraphicsPushContext(context!)
-        self.draw(in: CGRect(x: 0, y: 0, width: targetSize.width, height: targetSize.height))
-        UIGraphicsPopContext()
-        CVPixelBufferUnlockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
-        
-        return pixelBuffer
-    }
-}
-
 final class LeafDetectorService: ObservableObject {
     private var leafModel: LeafDetector
     private var modelInputSize = CGSize(width: 640, height: 640)
@@ -86,7 +25,6 @@ final class LeafDetectorService: ObservableObject {
     private var iouThreshold: Float = 0.7
     
     private var classNames = ["leaf"]
-    
     
     init(
         confidenceThreshold: Float = 0.6,

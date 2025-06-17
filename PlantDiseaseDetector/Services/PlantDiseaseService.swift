@@ -33,6 +33,7 @@ class PlantDiseaseService {
 
         do {
             let prediction = try model.prediction(image: pixelBuffer)
+            
             return ("Classification succeeded", prediction)
         } catch {
             return ("Prediction failed: \(error.localizedDescription)", nil)
