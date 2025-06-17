@@ -76,6 +76,7 @@ struct SectionView: View {
 
 #Preview {
     DiseaseDetailView(disease: Disease(
+        id: .rust,
         name: "Rust",
         imageName: "image-rust",
         overview: "A fungal disease that primarily affects leaves, forming characteristic rust-colored pustules.",

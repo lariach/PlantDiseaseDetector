@@ -33,7 +33,7 @@ struct AddPhotoFAB: View {
                     .clipShape(Circle())
                     .shadow(color: .black.opacity(0.3), radius: 8, x: 0, y: 4)
             }
-            .padding(.bottom, 120)
+            .padding(.bottom, 30)
             .padding(.trailing, 20)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
             

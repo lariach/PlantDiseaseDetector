@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-enum DiseaseEnum: String {
+enum DiseaseEnum: String, Codable {
     case rust = "Rust"
     case aphid = "Aphid"
     case sunburn = "Sunburn"
