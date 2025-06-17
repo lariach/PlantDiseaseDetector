@@ -54,36 +54,10 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         super.viewDidLayoutSubviews()
         previewLayer?.frame = view.bounds
         
-        // Cek apakah corner layer sudah ditambahkan
         if view.layer.sublayers?.first(where: { $0.name == "cornerLayer" }) == nil {
             drawCornerFrame(over: view)
         }
     }
-    
-//    func setupCamera() {
-//        captureSession = AVCaptureSession()
-//        captureSession.sessionPreset = .photo
-//        
-//        guard let camera = AVCaptureDevice.default(for: .video),
-//              let input = try? AVCaptureDeviceInput(device: camera),
-//              captureSession.canAddInput(input) else { return }
-//        
-//        captureDevice = camera
-//        captureSession.addInput(input)
-//        
-//        photoOutput = AVCapturePhotoOutput()
-//        captureSession.addOutput(photoOutput)
-//        
-//        previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-//        previewLayer.videoGravity = .resizeAspectFill
-//        previewLayer.frame = view.bounds
-//        view.layer.insertSublayer(previewLayer, at: 0)
-//        
-//        // ✅ Start session in background to avoid blocking UI
-//        DispatchQueue.global(qos: .userInitiated).async {
-//            self.captureSession.startRunning()
-//        }
-//    }
     
     func setupCamera() {
         DispatchQueue.global(qos: .userInitiated).async {
@@ -125,46 +99,57 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         }
     }
     
-    func setupOverlay() {
-        // Cancel Button
+    func addCancelBtn() {
         let cancel = UIButton(type: .system)
         cancel.setImage(UIImage(systemName: "xmark"), for: .normal)
         cancel.tintColor = .white
         cancel.frame = CGRect(x: 20, y: 60, width: 40, height: 40)
         cancel.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         view.addSubview(cancel)
-        
-        // Help Button
+    }
+    
+    func addHelpBtn() {
         let helpBtn = UIButton(type: .system)
         helpBtn.setImage(UIImage(systemName: "questionmark.circle"), for: .normal)
         helpBtn.tintColor = .white
         helpBtn.frame = CGRect(x: view.bounds.width - 100, y: 60, width: 40, height: 40)
         helpBtn.addTarget(self, action: #selector(showHelpSheet), for: .touchUpInside)
         view.addSubview(helpBtn)
-        
-        // Flash Toggle Button
+    }
+    
+    func addTorchBtn(){
         let flashBtn = UIButton(type: .system)
         flashBtn.setImage(UIImage(systemName: "bolt.fill"), for: .normal)
         flashBtn.tintColor = isFlashOn ? .yellow : .white
         flashBtn.frame = CGRect(x: view.bounds.width - 60, y: 60, width: 40, height: 40)
         flashBtn.addTarget(self, action: #selector(toggleFlash), for: .touchUpInside)
         view.addSubview(flashBtn)
-        
-        // Gallery Button
+    }
+    
+    func addGalleryBtn(){
         let galleryButton = UIButton(type: .custom)
         galleryButton.frame = CGRect(x: 35, y: view.bounds.height - 215, width: 70, height: 70)
         galleryButton.backgroundColor = .gray
         galleryButton.layer.cornerRadius = 8
         galleryButton.addTarget(self, action: #selector(openPhotoLibrary), for: .touchUpInside)
         view.addSubview(galleryButton)
-        
-        // Capture Button
+    }
+    
+    func addCaptureBtn(){
         let button = UIButton(type: .custom)
         button.frame = CGRect(x: (view.bounds.width - 70) / 2, y: view.bounds.height - 220, width: 80, height: 80)
         button.backgroundColor = .white
         button.layer.cornerRadius = 40
         button.addTarget(self, action: #selector(takePhoto), for: .touchUpInside)
         view.addSubview(button)
+    }
+    
+    func setupOverlay() {
+        addCancelBtn()
+        addHelpBtn()
+        addTorchBtn()
+        addGalleryBtn()
+        addCaptureBtn()
     }
     
     @objc func takePhoto() {
@@ -203,14 +188,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
             print("Torch could not be used: \(error)")
         }
     }
-    
-//    @objc func openPhotoLibrary() {
-//        let picker = UIImagePickerController()
-//        picker.sourceType = .photoLibrary
-//        picker.delegate = self
-//        picker.allowsEditing = false
-//        present(picker, animated: true, completion: nil)
-//    }
     
     @objc func openPhotoLibrary() {
         var warningVC: UIHostingController<UploadWarningView>!
@@ -287,20 +264,15 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
             
             croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer, outputConnection: outputConnection, deviceResolution: captureDeviceResolution, deviceOrientation: orientation)
         } else {
-            // Fallback if connections are not available
-            croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer) // Simpler crop if connections are complex
+            croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer) // simpler crop if connections are complex
         }
         
-        // Optional: Turn off torch after capture
         if captureDevice?.hasTorch == true {
             try? captureDevice?.lockForConfiguration()
             captureDevice?.torchMode = .off
             captureDevice?.unlockForConfiguration()
         }
-        
-        // 🧠 Optional: run classification here
-        // classify(image) { result in ... }
-        
+                
         if let realCroppedImage = croppedImage as? UIImage {
             delegate?.didCapture(image: realCroppedImage)
             return
@@ -325,7 +297,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         let cornerLength: CGFloat = 100
         let radius: CGFloat = 60
         
-        // Top-left
+        // top-left
         path.move(to: CGPoint(x: originX + cornerLength , y: originY))
         path.addLine(to: CGPoint(x: originX + radius, y: originY))
         path.addArc(withCenter: CGPoint(x: originX + radius, y: originY + radius),
@@ -335,7 +307,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
                     clockwise: false)
         path.addLine(to: CGPoint(x: originX, y: originY + cornerLength))
         
-        // Top-right
+        // top-right
         path.move(to: CGPoint(x: originX + frameSize, y: originY + cornerLength))
         path.addLine(to: CGPoint(x: originX + frameSize, y: originY + radius))
         path.addArc(withCenter: CGPoint(x: (originX + frameSize) - radius, y: originY + radius),
@@ -345,7 +317,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
                     clockwise: false)
         path.addLine(to: CGPoint(x: originX + frameSize - cornerLength, y: originY))
         
-        // Bottom-left
+        // bottom-left
         path.move(to: CGPoint(x: originX, y: originY + frameSize - cornerLength))
         path.addLine(to: CGPoint(x: originX, y: originY + frameSize - radius))
         path.addArc(withCenter: CGPoint(x: originX + radius, y: originY + frameSize - radius),
@@ -355,7 +327,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
                     clockwise: false)
         path.addLine(to: CGPoint(x: originX + cornerLength, y: originY + frameSize))
         
-        // Bottom-right
+        // bottom-right
         path.move(to: CGPoint(x: originX + frameSize - cornerLength, y: originY + frameSize))
         path.addLine(to: CGPoint(x: originX + frameSize - radius, y: originY + frameSize))
         path.addArc(withCenter: CGPoint(x: originX + frameSize - radius, y: originY + frameSize - radius),
