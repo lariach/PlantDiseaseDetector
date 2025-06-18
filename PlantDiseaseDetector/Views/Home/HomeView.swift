@@ -16,6 +16,7 @@ struct HomeView: View {
     @State private var showCamera: Bool = false
     @State private var plantDiseaseName: String?
     @State private var plantDiseaseProbability: Double?
+    @State private var noLeaveAlert: Bool = false
     
     private let plantDiseaseService: PlantDiseaseService = PlantDiseaseService()
     
@@ -85,21 +86,22 @@ struct HomeView: View {
     
     func getPlantDisease() {
 
-            guard let image = selectedImage else {
-                print("selectedImage' is nil")
-                return
-            }
+        guard let image = selectedImage else {
+            print("selectedImage' is nil")
+            return
+        }
 
-            guard let detectedObjects = leafDetectorService.detectLeaf(in: image) else {
-                print("❌ FAILED: 'leafDetectorService.detectLeaf(in:)' returned nil. This likely means there was an internal error in your LeafDetectorService model or processing. Exiting.")
-                return
-            }
+        guard let detectedObjects = leafDetectorService.detectLeaf(in: image) else {
+            print("❌ FAILED: 'leafDetectorService.detectLeaf(in:)' returned nil. This likely means there was an internal error in your LeafDetectorService model or processing. Exiting.")
+            return
+        }
             
         // TODO: add logic to handle no leaves
-            guard !detectedObjects.isEmpty else {
-                print("no leaves detected")
-                return
-            }
+        guard !detectedObjects.isEmpty else {
+            print("no leaves detected")
+            noLeaveAlert = true
+            return
+        }
         
         let classifyOutput = plantDiseaseService.classify(image: image)
         
@@ -186,6 +188,16 @@ struct HomeView: View {
         }
         .fullScreenCover(isPresented: $showCamera, onDismiss: getPlantDisease) {
             CameraView(image: $selectedImage)
+        }
+        .alert("No plant detected in the picture!", isPresented: $noLeaveAlert) {
+            Button("Go to Clinic", role: .cancel) {
+                noLeaveAlert = false
+            }
+            Button("Retake", role: .destructive) {
+                showCamera = true
+            }
+        } message: {
+            Text("Do you want to re-upload? ")
         }
     }
 }

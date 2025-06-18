@@ -68,7 +68,6 @@ struct PlantDiagnosisCardView: View {
                                 .foregroundColor(.red)
                                 .font(.system(size: 20))
                         }
-                        .border(Color.red, width: 1)
                     }
                     .padding(.bottom, 15)
                     .padding(.trailing, 10)
