@@ -11,7 +11,7 @@ import Foundation
 struct DiseaseLibraryCard: View {
     let disease: Disease
     
-    var probability: Double = 0.0
+    var probability: Double? = nil
 
     var cardSize: CGSize = CGSize(width: 180, height: 170)
     
@@ -33,17 +33,18 @@ struct DiseaseLibraryCard: View {
                 .frame(height: 60)
                 .cornerRadius(16)
 
-                if probability != 0.0 {
+                if let probability = probability {
                     
                     Text("\(disease.name) (\(String(format: "%.1f", probability * 100))%)")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.background)
                         .padding(.leading, 12)
                         .padding(.bottom, 12)
+                    
                 } else {
                     Text(disease.name)
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.background)
                         .padding(.leading, 12)
                         .padding(.bottom, 12)
                 }
@@ -53,7 +54,10 @@ struct DiseaseLibraryCard: View {
             .cornerRadius(16)
             .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 4)
         }
-        .buttonStyle(PlainButtonStyle()) // agar tidak ada efek biru klik
+        .buttonStyle(PlainButtonStyle()) 
     }
 }
 
+#Preview {
+    ContentView()
+}

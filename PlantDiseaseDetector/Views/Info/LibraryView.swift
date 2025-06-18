@@ -29,7 +29,7 @@ struct LibraryView: View {
                 }
                 
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 16) {
+                    LazyVGrid(columns: columns, spacing: 10) {
                         ForEach(diseaseList) { disease in
                             DiseaseLibraryCard(
                                 disease: disease,
@@ -38,9 +38,9 @@ struct LibraryView: View {
                     }
                 }
             }
-            .background(Color("color-BgPage"))
-            .padding(.horizontal, 20)
         }
+        .padding(.horizontal, 20)
+        .background(Color.background)
     }
 }
 
