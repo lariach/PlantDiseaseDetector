@@ -18,6 +18,11 @@ struct CameraView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> CameraViewController {
         let vc = CameraViewController()
         vc.delegate = context.coordinator
+        vc.onImageConfirmed = { capturedImage in
+            self.image = capturedImage
+            self.onImageConfirmed?(capturedImage)
+            self.dismiss()
+        }
         return vc
     }
 

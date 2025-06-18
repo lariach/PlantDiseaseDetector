@@ -296,29 +296,6 @@ extension CameraViewController {
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
     }
-    
-    func showPreview() {
-        let previewVC = UIHostingController(
-            rootView:
-                PreviewPhotoView(
-                    image: Binding<UIImage?>(
-                        get: { self.selectedImage },
-                        set: { self.selectedImage = $0 }
-                    ),
-                    
-                    onReupload: {
-                        self.selectedImage = nil
-                        self.openPhotoLibrary()
-                    },
-                    onUse: {
-                        if let image = self.selectedImage {
-                            self.onImageConfirmed?(image) // Kirim ke parent
-                        }
-                    }
-                )
-        )
-        self.present(previewVC, animated: true)
-    }
 }
 
 /// cropping pictures from gallery
@@ -348,6 +325,33 @@ extension CameraViewController {
         hostingController.modalPresentationStyle = .fullScreen
         self.present(hostingController, animated: true)
     }
+}
+
+/// photo previewers
+extension CameraViewController {
+    func showPreview() {
+        let previewVC = UIHostingController(
+            rootView:
+                PreviewPhotoView(
+                    image: Binding<UIImage?>(
+                        get: { self.selectedImage },
+                        set: { self.selectedImage = $0 }
+                    ),
+                    
+                    onReupload: {
+                        self.selectedImage = nil
+                        self.openPhotoLibrary()
+                    },
+                    onUse: {
+                        if let image = self.selectedImage {
+                            self.onImageConfirmed?(image)
+                        }
+                    }
+                )
+        )
+        self.present(previewVC, animated: true)
+    }
+
 }
 
 class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PHPickerViewControllerDelegate, TOCropViewControllerDelegate {
