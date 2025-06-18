@@ -9,83 +9,6 @@ import SwiftUI
 import PhotosUI
 import SwiftData
 
-struct PlantDiagnosisView: View {
-    let plantDiagnosis: PlantDiagnosis
-    
-    var body: some View {
-        Text("Hello, World!")
-    }
-}
-
-struct PlantDiagnosisCardView: View {
-    let plantDiagnosis: PlantDiagnosis
-    
-    let onDelete: () -> Void
-    
-    var body: some View {
-        NavigationLink(destination: PlantDiagnosisView(plantDiagnosis: plantDiagnosis)) {
-            
-            HStack{
-                
-                Image(uiImage: plantDiagnosis.getImage())
-                    .resizable()
-                    .aspectRatio(1, contentMode: .fill)
-                    .frame(width: 120, height: 120)
-                    .clipped()
-                    .cornerRadius(12)
-                    .padding(10)
-                
-
-                VStack (alignment: .leading, spacing: 5){
-                    
-                    Text(plantDiagnosis.disease.rawValue)
-                        .font(.headline)
-                        .fontWeight(.bold)
-                        .foregroundColor(Color("color-font-green"))
-                    
-                    HStack {
-                        Image(systemName: "clock")
-                            .font(.system(size: 14))
-                        
-                        Text(
-                            plantDiagnosis.createdAt
-                                .formatted(date: .abbreviated, time: .shortened)
-                        )
-                        .font(.caption)
-                    }
-                    .foregroundColor(.black)
-                
-                
-                    Spacer()
-                    
-                    Button {
-                        onDelete()
-                    } label: {
-                        HStack {
-                            Spacer()
-                            
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                                .font(.system(size: 20))
-                            
-                        }
-                        .padding(.bottom, 15)
-                        .padding(.trailing, 10)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.top, 20)
-                
-                Spacer()
-            }
-            .frame(maxWidth: 353, maxHeight: 140)
-            .background(Color.white)
-            .cornerRadius(20)
-            .shadow(color: .black.opacity(0.5), radius: 4, x: 0, y: 4)
-        }
-    }
-}
-
 struct HomeView: View {
 
     @State private var selectedImage: UIImage?
@@ -96,16 +19,10 @@ struct HomeView: View {
     
     private let plantDiseaseService: PlantDiseaseService = PlantDiseaseService()
     
-    private let leafDetectorService: LeafDetectorService = {
-        do {
-            return try LeafDetectorService()
-        } catch {
-            fatalError("Failed to load LeafDetectionService model: \(error.localizedDescription)")
-        }
-    }()
-    
     @Environment(\.modelContext) var context
-    @Query var plantDiagnosisList: [PlantDiagnosis]
+    
+    @Query(filter: #Predicate<PlantDiagnosis> { _ in true },
+           sort: [SortDescriptor(\PlantDiagnosis.createdAt, order: .reverse)]) var plantDiagnosisList: [PlantDiagnosis]
     
     func create(_ plantDiagnosis: PlantDiagnosis) {
         do {
@@ -122,6 +39,7 @@ struct HomeView: View {
         do {
             context.delete(plantDiagnosis)
             try context.save()
+            
             print("Plant diagnosis deleted successfully!")
         } catch {
             print("Error deleting plant diagnosis: \(error)")
@@ -131,16 +49,28 @@ struct HomeView: View {
     func plantDiseaseOutputToPlantDiagnosis(plantDiseaseOutput: PlantDiseaseOutput, photo: UIImage) -> PlantDiagnosis {
         var diseases: [DiseaseWrapper] = []
         
-        for (disease, probability) in plantDiseaseOutput.targetProbability {
-            diseases.append(DiseaseWrapper(
-                disease: DiseaseEnum(rawValue: disease) ?? .rust,
-                probability: probability
-            ))
-        }
+        let targetDisease = plantDiseaseOutput.target
+        let targetProbability = plantDiseaseOutput.targetProbability[targetDisease] ?? 0.0
         
+        if targetProbability < 0.9 {
+            for (disease, probability) in plantDiseaseOutput.targetProbability {
+                
+                if disease == plantDiseaseOutput.target {
+                    continue
+                }
+                
+                if let disease = DiseaseEnum(rawValue: disease) {
+                    diseases.append(DiseaseWrapper(
+                        disease: disease,
+                        probability: probability
+                    ))
+                }
+            }
+        }
+
         return PlantDiagnosis(
-            disease: DiseaseEnum(rawValue: plantDiseaseOutput.target) ?? .rust,
-            probability: plantDiseaseOutput.targetProbability[plantDiseaseOutput.target] ?? 0.0,
+            disease: DiseaseEnum(rawValue: targetDisease) ?? .rust,
+            probability: targetProbability,
             diseases: diseases,
             photo: photo
         )
@@ -223,7 +153,7 @@ struct HomeView: View {
                     } else {
                         
                         ScrollView {
-                            VStack(spacing: 16) {
+                            VStack(spacing: 10) {
                                 ForEach(plantDiagnosisList) { diagnosis in
                                     PlantDiagnosisCardView(
                                         plantDiagnosis: diagnosis,

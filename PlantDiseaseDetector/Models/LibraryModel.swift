@@ -112,3 +112,5 @@ let diseaseList: [Disease] = [
         """
     )
 ]
+
+let diseaseDict: [DiseaseEnum: Disease] = Dictionary(uniqueKeysWithValues: diseaseList.map { ($0.id, $0) })

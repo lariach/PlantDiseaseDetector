@@ -14,12 +14,12 @@ struct DiseaseDetailView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                // Gambar header
+                
                 ZStack(alignment: .bottomLeading){
                     Image(disease.imageName)
                         .resizable()
                         .scaledToFill()
-                        .frame(maxWidth: .infinity ,maxHeight: 350)
+                        .frame(maxWidth: .infinity)
                         .clipped()
                     
                     LinearGradient(
@@ -30,13 +30,14 @@ struct DiseaseDetailView: View {
                     .frame(height: 300)
                     
                     VStack(alignment: .leading, spacing: 12) {
+                        
                         Text(disease.name)
                             .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.background)
                         
                         Text(disease.overview)
                             .font(.system(size: 17, weight: .regular))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.background)
                                   
                     }
                     .padding(20)
@@ -49,11 +50,22 @@ struct DiseaseDetailView: View {
                 }
                 .padding(20)
                 
+                Spacer().frame(height: 30)
             }
         }
         .background(Color("color-BgPage"))
-//        .navigationTitle("Disease Detail")
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Disease Detail")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color("color-font-green"))
+            }
+        }
+        .toolbarBackground(Color("color-BgPage"), for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .navigationBarTitleDisplayMode(.inline)
+        
     }
 }
 
@@ -65,10 +77,10 @@ struct SectionView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title)
                 .font(.system(size: 22, weight: .bold))
-                .foregroundColor(Color("color-font-green"))
+                .foregroundColor(Color.font)
             Text(content)
                 .font(.system(size: 16, weight: .regular))
-                .foregroundColor(.black)
+                .foregroundColor(Color.font)
         }
     }
 }

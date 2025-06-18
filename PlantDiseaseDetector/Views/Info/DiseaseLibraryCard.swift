@@ -10,9 +10,11 @@ import Foundation
 
 struct DiseaseLibraryCard: View {
     let disease: Disease
+    
+    var probability: Double? = nil
 
     var cardSize: CGSize = CGSize(width: 180, height: 170)
-
+    
     var body: some View {
         NavigationLink(destination: DiseaseDetailView(disease: disease)) {
             ZStack(alignment: .bottomLeading) {
@@ -31,22 +33,31 @@ struct DiseaseLibraryCard: View {
                 .frame(height: 60)
                 .cornerRadius(16)
 
-                Text(disease.name)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.leading, 12)
-                    .padding(.bottom, 12)
+                if let probability = probability {
+                    
+                    Text("\(disease.name) (\(String(format: "%.1f", probability * 100))%)")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Color.background)
+                        .padding(.leading, 12)
+                        .padding(.bottom, 12)
+                    
+                } else {
+                    Text(disease.name)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Color.background)
+                        .padding(.leading, 12)
+                        .padding(.bottom, 12)
+                }
+                
             }
             .frame(width: cardSize.width, height: cardSize.height)
             .cornerRadius(16)
             .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 4)
         }
-        .buttonStyle(PlainButtonStyle()) // agar tidak ada efek biru klik
+        .buttonStyle(PlainButtonStyle()) 
     }
 }
 
 #Preview {
-    DiseaseLibraryCard(disease: diseaseList[0])
+    ContentView()
 }
-
-
