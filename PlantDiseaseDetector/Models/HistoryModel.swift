@@ -46,4 +46,3 @@ let historyList: [History] = [
         disease3: "sunburn"
     )
 ]
-

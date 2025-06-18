@@ -13,6 +13,7 @@ struct CameraView: UIViewControllerRepresentable {
     @Binding var image: UIImage?
     @Environment(\.presentationMode) var presentationMode
     @Environment(\.dismiss) var dismiss
+    var onImageConfirmed: ((UIImage) -> Void)?
 
     func makeUIViewController(context: Context) -> CameraViewController {
         let vc = CameraViewController()
