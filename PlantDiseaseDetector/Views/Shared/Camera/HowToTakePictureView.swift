@@ -13,8 +13,7 @@ struct HowToTakePictureView: View {
 
     var body: some View {
         ZStack {
-            Color("color-BgPage")
-                .ignoresSafeArea()
+            Color.background.ignoresSafeArea()
             
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -36,20 +35,51 @@ struct HowToTakePictureView: View {
                         .cornerRadius(12)
                     
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("• Make sure the affected part fits inside the frame.")
-                        Text("• Avoid harsh shadows and artificial lighting.")
-                        Text("• Avoid messy or busy backgrounds.")
-                        Text("• Hold your phone still to avoid blurriness.")
+                        HStack {
+                            Image("photo-how0")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                            
+                            Text("Keep the affected part centered and fully visible in the frame.")
+                        }
+                        
+                        HStack {
+                            Image("photo-how1")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                            
+                            Text("Ensure the background is clear—no other plants or distracting objects.")
+                        }
+                        
+                        HStack {
+                            Image("photo-how2")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                            
+                            Text("Avoid harsh shadows or artificial lighting that may alter color.")
+                        }
+                        
+                        HStack {
+                            Image("photo-how3")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 50, height: 50)
+                            
+                            Text("Hold your device steady to prevent blurry images.")
+                        }
                     }
                     .padding(20)
                     .font(.subheadline)
-                    .foregroundColor(Color("color-font-green"))
+                    .background(Color.white)
+                    .foregroundColor(Color.font)
                     .frame(maxWidth: .infinity)
-                    .background(Color(.white))
                     .cornerRadius(20)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.black, lineWidth: 1)
+                            .stroke(Color.font, lineWidth: 1)
                     )
                     .padding(.horizontal, 5)
                 }
