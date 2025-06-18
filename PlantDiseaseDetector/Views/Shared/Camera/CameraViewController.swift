@@ -28,6 +28,17 @@ extension CameraViewController {
               captureSession.canAddInput(input) else { return }
         
         captureDevice = camera
+        
+        do {
+            try captureDevice?.lockForConfiguration()
+            captureDevice?.videoZoomFactor = 1.0 // jnitial zoom level
+            captureDevice?.ramp(toVideoZoomFactor: 1.0, withRate: 10.0)
+            captureDevice?.videoZoomFactor = max(1.0, captureDevice?.videoZoomFactor ?? 1.0)
+            captureDevice?.unlockForConfiguration()
+        } catch {
+            print("Error setting up zoom: \(error)")
+        }
+        
         captureSession.addInput(input)
         
         photoOutput = AVCapturePhotoOutput()
@@ -189,6 +200,35 @@ extension CameraViewController {
             print("Torch could not be used: \(error)")
         }
     }
+    
+    @objc func handlePinchGesture(_ sender: UIPinchGestureRecognizer) {
+        guard let device = captureDevice else { return }
+        
+        /// check if video device supports zooming
+        if !device.isFocusPointOfInterestSupported || !device.isExposurePointOfInterestSupported {
+            return
+        }
+        
+        switch sender.state {
+        case .began:
+            initialZoomFactor = device.videoZoomFactor
+        case .changed:
+            let factor = initialZoomFactor * sender.scale
+            let newZoomFactor = max(1.0, min(factor, device.activeFormat.videoMaxZoomFactor))
+            
+            do {
+                try device.lockForConfiguration()
+                device.ramp(toVideoZoomFactor: newZoomFactor, withRate: 10.0)
+                device.unlockForConfiguration()
+            } catch {
+                print("Error setting zoom: \(error)")
+            }
+        case .ended:
+            break
+        default:
+            break
+        }
+    }
 }
 
 /// cropping pictures taken from camera
@@ -197,14 +237,14 @@ extension CameraViewController {
         guard let data = photo.fileDataRepresentation(),
               let image = UIImage(data: data) else { return }
         
-        // calculate the crop rectangle based on frame coordinates
+        /// calculate the crop rectangle based on frame coordinates
         let frameWidth = view.bounds.width - 50
         let originX = (view.bounds.width - frameWidth) / 2
         let originY = (view.bounds.height - frameWidth) / 2
         
         let cropRect = CGRect(x: originX, y: originY, width: frameWidth, height: frameWidth)
         
-        // convert cropRect from previewLayer coordinates to image coordinates
+        /// convert cropRect from previewLayer coordinates to image coordinates
         guard let previewLayer = self.previewLayer else {
             DispatchQueue.main.async {
                 self.selectedImage = image
@@ -223,7 +263,7 @@ extension CameraViewController {
             
             croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer, outputConnection: outputConnection, deviceResolution: captureDeviceResolution, deviceOrientation: orientation)
         } else {
-            croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer) // simpler crop if connections are complex
+            croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer) /// simpler crop if connections are complex
         }
         
         DispatchQueue.main.async {
@@ -370,15 +410,20 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
     var captureDevice: AVCaptureDevice?
     weak var delegate: CameraViewControllerDelegate?
     
-    var isFlashOn: Bool = false
     var selectedImage: UIImage?
     var showPreviewAfterCrop = false
     var onImageConfirmed: ((UIImage) -> Void)?
+    
+    /// camera settings
+    var isFlashOn: Bool = false
+    private var initialZoomFactor: CGFloat = 1.0
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupCamera()
         setupOverlay()
+        let pinchRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(handlePinchGesture(_:)))
+        view.addGestureRecognizer(pinchRecognizer)
     }
     
     override func viewDidLayoutSubviews() {
