@@ -58,20 +58,19 @@ struct PlantDiagnosisCardView: View {
                 
                     Spacer()
                     
-                    Button {
-                        openDeleteAlert()
-                    } label: {
-                        HStack {
-                            Spacer()
-                            
+                    HStack {
+                        Spacer()
+                        
+                        Button {
+                            openDeleteAlert()
+                        } label: {
                             Image(systemName: "trash")
                                 .foregroundColor(.red)
                                 .font(.system(size: 20))
-                            
                         }
-                        .padding(.bottom, 15)
-                        .padding(.trailing, 10)
                     }
+                    .padding(.bottom, 15)
+                    .padding(.trailing, 10)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.top, 20)

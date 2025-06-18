@@ -16,6 +16,7 @@ struct HomeView: View {
     @State private var showCamera: Bool = false
     @State private var plantDiseaseName: String?
     @State private var plantDiseaseProbability: Double?
+    @State private var noLeaveAlert: Bool = false
     
     private let plantDiseaseService: PlantDiseaseService = PlantDiseaseService()
     
@@ -188,6 +189,16 @@ struct HomeView: View {
             CameraView(image: $selectedImage) { confirmedImage in
                 self.selectedImage = confirmedImage
             }
+        }
+        .alert("No plant detected in the picture!", isPresented: $noLeaveAlert) {
+            Button("Go to Clinic", role: .cancel) {
+                noLeaveAlert = false
+            }
+            Button("Retake", role: .destructive) {
+                showCamera = true
+            }
+        } message: {
+            Text("Do you want to re-upload? ")
         }
     }
 }
