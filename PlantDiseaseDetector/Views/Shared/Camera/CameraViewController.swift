@@ -374,22 +374,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         super.viewDidLoad()
         setupCamera()
         setupOverlay()
-        
-        if showCropView,
-           let imageCrop = imageToCrop as? UIImage {
-            let cropView = CropView(
-                image: imageCrop,
-                onCrop: { croppedImage in
-                    self.delegate?.didCapture(image: croppedImage)
-                    self.showCropView = false
-                },
-                onCancel: {
-                    self.showCropView = false
-                }
-            )
-            let hostingController = UIHostingController(rootView: cropView)
-            self.present(hostingController, animated: true)
-        }
     }
     
     override func viewDidLayoutSubviews() {
