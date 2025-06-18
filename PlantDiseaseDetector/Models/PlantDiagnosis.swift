@@ -10,6 +10,7 @@ import SwiftData
 import UIKit
 
 struct DiseaseWrapper: Codable, Hashable {
+    var id: UUID = UUID()
     var disease: DiseaseEnum
     var probability: Double
 }

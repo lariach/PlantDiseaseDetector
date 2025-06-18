@@ -31,7 +31,9 @@ struct LibraryView: View {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(diseaseList) { disease in
-                            DiseaseLibraryCard(disease: disease)
+                            DiseaseLibraryCard(
+                                disease: disease,
+                            )
                         }
                     }
                 }
