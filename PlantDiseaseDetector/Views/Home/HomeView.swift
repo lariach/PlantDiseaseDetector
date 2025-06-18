@@ -21,7 +21,8 @@ struct HomeView: View {
     
     @Environment(\.modelContext) var context
     
-    @Query var plantDiagnosisList: [PlantDiagnosis]
+    @Query(filter: #Predicate<PlantDiagnosis> { _ in true },
+           sort: [SortDescriptor(\PlantDiagnosis.createdAt, order: .reverse)]) var plantDiagnosisList: [PlantDiagnosis]
     
     func create(_ plantDiagnosis: PlantDiagnosis) {
         do {
@@ -135,7 +136,7 @@ struct HomeView: View {
                     } else {
                         
                         ScrollView {
-                            VStack(spacing: 16) {
+                            VStack(spacing: 10) {
                                 ForEach(plantDiagnosisList) { diagnosis in
                                     PlantDiagnosisCardView(
                                         plantDiagnosis: diagnosis,

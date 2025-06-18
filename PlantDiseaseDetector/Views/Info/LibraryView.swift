@@ -29,13 +29,15 @@ struct LibraryView: View {
                 }
                 
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 10) {
+                    LazyVGrid(columns: columns, spacing: 6) {
                         ForEach(diseaseList) { disease in
                             DiseaseLibraryCard(
                                 disease: disease,
+                                cardSize: CGSize(width: 170, height: 170)
                             )
                         }
                     }
+                    .padding(.horizontal, 8)
                 }
             }
         }
