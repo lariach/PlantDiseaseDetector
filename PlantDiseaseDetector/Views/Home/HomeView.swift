@@ -19,6 +19,14 @@ struct HomeView: View {
     
     private let plantDiseaseService: PlantDiseaseService = PlantDiseaseService()
     
+    private let leafDetectorService: LeafDetectorService = {
+        do {
+            return try LeafDetectorService()
+        } catch {
+            fatalError("Failed to load LeafDetectionService model: \(error.localizedDescription)")
+        }
+    }()
+    
     @Environment(\.modelContext) var context
     
     @Query(filter: #Predicate<PlantDiagnosis> { _ in true },
