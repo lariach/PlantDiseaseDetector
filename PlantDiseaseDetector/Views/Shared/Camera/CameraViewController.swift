@@ -17,81 +17,8 @@ protocol CameraViewControllerDelegate: AnyObject {
     func didCancel()
 }
 
-class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PHPickerViewControllerDelegate, TOCropViewControllerDelegate {
-    
-    func presentCropView(for image: UIImage) {
-            let cropView = CropView(
-                image: image,
-                onCrop: { croppedImage in
-                    // When cropping is done, dismiss the crop view
-                    self.dismiss(animated: true) {
-                        // And pass the cropped image to the original delegate
-                        self.delegate?.didCapture(image: croppedImage)
-                    }
-                },
-                onCancel: {
-                    // If the user cancels, just dismiss the crop view
-                    self.dismiss(animated: true, completion: nil)
-                }
-            )
-            
-            // Present the CropView modally using a UIHostingController
-            let hostingController = UIHostingController(rootView: cropView)
-            hostingController.modalPresentationStyle = .fullScreen
-            self.present(hostingController, animated: true)
-        }
-    
-    @State private var imageToCrop: UIImage?
-    @State private var showCropView = false
-    
-    
-    var captureSession: AVCaptureSession!
-    var photoOutput: AVCapturePhotoOutput!
-    var previewLayer: AVCaptureVideoPreviewLayer!
-    var captureDevice: AVCaptureDevice?
-    weak var delegate: CameraViewControllerDelegate?
-    
-    var isFlashOn: Bool = false
-    var selectedImage: UIImage?
-    var showPreviewAfterCrop = false
-    var onImageConfirmed: ((UIImage) -> Void)?
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupCamera()
-        setupOverlay()
-        
-        if showCropView,
-           let imageCrop = imageToCrop as? UIImage {
-            let cropView = CropView(
-                image: imageCrop,
-                onCrop: { croppedImage in
-                    self.delegate?.didCapture(image: croppedImage)
-                    self.showCropView = false
-                },
-                onCancel: {
-                    self.showCropView = false
-                }
-            )
-            let hostingController = UIHostingController(rootView: cropView)
-            self.present(hostingController, animated: true)
-        }
-    }
-    
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        previewLayer?.frame = view.bounds
-        
-        if view.layer.sublayers?.first(where: { $0.name == "cornerLayer" }) == nil {
-            drawCornerFrame(over: view)
-        }
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.navigationController?.setNavigationBarHidden(true, animated: false)
-    }
-
+/// camera for taking photos
+extension CameraViewController {
     func setupCamera() {
         captureSession = AVCaptureSession()
         captureSession.sessionPreset = .photo
@@ -116,6 +43,66 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         }
     }
     
+    func drawCornerFrame(over parentView: UIView) {
+        let cornerLayer = CAShapeLayer()
+        cornerLayer.name = "cornerLayer"
+        cornerLayer.strokeColor = UIColor.white.cgColor
+        cornerLayer.lineWidth = 3
+        cornerLayer.fillColor = UIColor.clear.cgColor
+        cornerLayer.lineCap = .round
+        
+        let path = UIBezierPath()
+        
+        let frameSize = parentView.bounds.width - 50
+        let originX = (parentView.bounds.width - frameSize) / 2
+        let originY = (parentView.bounds.height - frameSize) / 2
+        let cornerLength: CGFloat = 100
+        let radius: CGFloat = 60
+        
+        // top-left
+        path.move(to: CGPoint(x: originX + cornerLength , y: originY))
+        path.addLine(to: CGPoint(x: originX + radius, y: originY))
+        path.addArc(withCenter: CGPoint(x: originX + radius, y: originY + radius),
+                    radius: radius,
+                    startAngle: 3 * CGFloat.pi / 2,
+                    endAngle: CGFloat.pi,
+                    clockwise: false)
+        path.addLine(to: CGPoint(x: originX, y: originY + cornerLength))
+        
+        // top-right
+        path.move(to: CGPoint(x: originX + frameSize, y: originY + cornerLength))
+        path.addLine(to: CGPoint(x: originX + frameSize, y: originY + radius))
+        path.addArc(withCenter: CGPoint(x: (originX + frameSize) - radius, y: originY + radius),
+                    radius: radius,
+                    startAngle: 0,
+                    endAngle: 3 * CGFloat.pi / 2,
+                    clockwise: false)
+        path.addLine(to: CGPoint(x: originX + frameSize - cornerLength, y: originY))
+        
+        // bottom-left
+        path.move(to: CGPoint(x: originX, y: originY + frameSize - cornerLength))
+        path.addLine(to: CGPoint(x: originX, y: originY + frameSize - radius))
+        path.addArc(withCenter: CGPoint(x: originX + radius, y: originY + frameSize - radius),
+                    radius: radius,
+                    startAngle: .pi,
+                    endAngle: .pi / 2,
+                    clockwise: false)
+        path.addLine(to: CGPoint(x: originX + cornerLength, y: originY + frameSize))
+        
+        // bottom-right
+        path.move(to: CGPoint(x: originX + frameSize - cornerLength, y: originY + frameSize))
+        path.addLine(to: CGPoint(x: originX + frameSize - radius, y: originY + frameSize))
+        path.addArc(withCenter: CGPoint(x: originX + frameSize - radius, y: originY + frameSize - radius),
+                    radius: radius,
+                    startAngle: .pi / 2,
+                    endAngle: 0,
+                    clockwise: false)
+        path.addLine(to: CGPoint(x: originX + frameSize, y: originY + frameSize - cornerLength))
+        
+        cornerLayer.path = path.cgPath
+        parentView.layer.addSublayer(cornerLayer)
+    }
+    
     func addCancelBtn() {
         let cancel = UIButton(type: .system)
         cancel.setImage(UIImage(systemName: "xmark"), for: .normal)
@@ -124,7 +111,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         cancel.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         view.addSubview(cancel)
     }
-
+    
     func addHelpBtn() {
         let helpBtn = UIButton(type: .system)
         helpBtn.setImage(UIImage(systemName: "questionmark.circle"), for: .normal)
@@ -202,49 +189,10 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
             print("Torch could not be used: \(error)")
         }
     }
-    
-    @objc func openPhotoLibrary() {
-        var warningVC: UIHostingController<UploadWarningView>!
-        
-        warningVC = UIHostingController(rootView:
-                                            UploadWarningView(
-                                                onContinue: {
-                                                    warningVC.dismiss(animated: true) {
-                                                        self.presentPhotoPicker()
-                                                    }
-                                                },
-                                                onCancel: {
-                                                    warningVC.dismiss(animated: true)
-                                                }
-                                            )
-        )
-        
-        warningVC.modalPresentationStyle = .automatic
-        self.present(warningVC, animated: true)
-    }
-    
-    func presentPhotoPicker() {
-        var config = PHPickerConfiguration()
-        config.filter = .images
-        config.selectionLimit = 1
-        
-        let picker = PHPickerViewController(configuration: config)
-        picker.delegate = self
-        present(picker, animated: true)
-    }
-    
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        picker.dismiss(animated: true, completion: nil)
+}
 
-        if let selectedImage = info[.originalImage] as? UIImage {
-            delegate?.didCapture(image: selectedImage)
-        }
-    }
-
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true, completion: nil)
-    }
-    
+/// cropping pictures taken from camera
+extension CameraViewController {
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         guard let data = photo.fileDataRepresentation(),
               let image = UIImage(data: data) else { return }
@@ -274,7 +222,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         } else {
             croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer) // simpler crop if connections are complex
         }
-                        
+        
         if let realCroppedImage = croppedImage as? UIImage {
             delegate?.didCapture(image: realCroppedImage)
             return
@@ -282,96 +230,10 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         
         delegate?.didCapture(image: image)
     }
-    
-    func drawCornerFrame(over parentView: UIView) {
-        let cornerLayer = CAShapeLayer()
-        cornerLayer.name = "cornerLayer"
-        cornerLayer.strokeColor = UIColor.white.cgColor
-        cornerLayer.lineWidth = 3
-        cornerLayer.fillColor = UIColor.clear.cgColor
-        cornerLayer.lineCap = .round
-        
-        let path = UIBezierPath()
-        
-        let frameSize = parentView.bounds.width - 50
-        let originX = (parentView.bounds.width - frameSize) / 2
-        let originY = (parentView.bounds.height - frameSize) / 2
-        let cornerLength: CGFloat = 100
-        let radius: CGFloat = 60
-        
-        // top-left
-        path.move(to: CGPoint(x: originX + cornerLength , y: originY))
-        path.addLine(to: CGPoint(x: originX + radius, y: originY))
-        path.addArc(withCenter: CGPoint(x: originX + radius, y: originY + radius),
-                    radius: radius,
-                    startAngle: 3 * CGFloat.pi / 2,
-                    endAngle: CGFloat.pi,
-                    clockwise: false)
-        path.addLine(to: CGPoint(x: originX, y: originY + cornerLength))
-        
-        // top-right
-        path.move(to: CGPoint(x: originX + frameSize, y: originY + cornerLength))
-        path.addLine(to: CGPoint(x: originX + frameSize, y: originY + radius))
-        path.addArc(withCenter: CGPoint(x: (originX + frameSize) - radius, y: originY + radius),
-                    radius: radius,
-                    startAngle: 0,
-                    endAngle: 3 * CGFloat.pi / 2,
-                    clockwise: false)
-        path.addLine(to: CGPoint(x: originX + frameSize - cornerLength, y: originY))
-        
-        // bottom-left
-        path.move(to: CGPoint(x: originX, y: originY + frameSize - cornerLength))
-        path.addLine(to: CGPoint(x: originX, y: originY + frameSize - radius))
-        path.addArc(withCenter: CGPoint(x: originX + radius, y: originY + frameSize - radius),
-                    radius: radius,
-                    startAngle: .pi,
-                    endAngle: .pi / 2,
-                    clockwise: false)
-        path.addLine(to: CGPoint(x: originX + cornerLength, y: originY + frameSize))
-        
-        // bottom-right
-        path.move(to: CGPoint(x: originX + frameSize - cornerLength, y: originY + frameSize))
-        path.addLine(to: CGPoint(x: originX + frameSize - radius, y: originY + frameSize))
-        path.addArc(withCenter: CGPoint(x: originX + frameSize - radius, y: originY + frameSize - radius),
-                    radius: radius,
-                    startAngle: .pi / 2,
-                    endAngle: 0,
-                    clockwise: false)
-        path.addLine(to: CGPoint(x: originX + frameSize, y: originY + frameSize - cornerLength))
-        
-        cornerLayer.path = path.cgPath
-        parentView.layer.addSublayer(cornerLayer)
-    }
-    
-    func cropViewController(_ cropViewController: TOCropViewController, didCropTo image: UIImage, with cropRect: CGRect, angle: Int) {
-        cropViewController.dismiss(animated: true) {
-            self.selectedImage = image
-            self.showPreview()
-        }
-    }
-    
-    func showPreview() {
-        let previewVC = UIHostingController(rootView:
-                                                PreviewPhotoView(
-                                                    image: Binding<UIImage?>(
-                                                        get: { self.selectedImage },
-                                                        set: { self.selectedImage = $0 }
-                                                    ),
-                                                    
-                                                    onReupload: {
-                                                        self.selectedImage = nil
-                                                        self.openPhotoLibrary()
-                                                    },
-                                                    onUse: {
-                                                        if let image = self.selectedImage {
-                                                            self.onImageConfirmed?(image) // Kirim ke parent
-                                                        }
-                                                    }
-                                                )
-        )
-        self.present(previewVC, animated: true)
-    }
-    
+}
+
+/// gallery view for uploading photos
+extension CameraViewController {
     func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
         picker.dismiss(animated: true)
         
@@ -392,74 +254,151 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         }
     }
     
-    func cropCapturedImageToOverlay(_ image: UIImage) -> UIImage? {
-        guard let cgImage = image.cgImage else { return nil }
-
-        // 🔥 Gunakan self.previewLayer
-        let previewSize = self.previewLayer.bounds.size
-
-        let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
-
-        let scaleX = imageSize.width / previewSize.width
-        let scaleY = imageSize.height / previewSize.height
-
-        let frameSize = previewSize.width - 50
-        let originX = (previewSize.width - frameSize) / 2
-        let originY = (previewSize.height - frameSize) / 2
-
-        let cropRect = CGRect(
-            x: originX * scaleX,
-            y: originY * scaleY,
-            width: frameSize * scaleX,
-            height: frameSize * scaleY
-        ).integral
-
-        guard let cropped = cgImage.cropping(to: cropRect) else { return nil }
-
-        return UIImage(cgImage: cropped, scale: image.scale, orientation: image.imageOrientation)
-    }
-
-}
-
-func cropCenterSquare(from image: UIImage) -> UIImage? {
-    let sourceSize = image.size
-    let sideLength = min(sourceSize.width, sourceSize.height)
-    
-    let xOffset = (sourceSize.width - sideLength) / 2.0
-    let yOffset = (sourceSize.height - sideLength) / 2.0
-    
-    let cropRect = CGRect(x: xOffset, y: yOffset, width: sideLength, height: sideLength).integral
-    
-    guard let cgImage = image.cgImage, let croppedCGImage = cgImage.cropping(to: cropRect) else {
-        return nil
+    @objc func openPhotoLibrary() {
+        var warningVC: UIHostingController<UploadWarningView>!
+        
+        warningVC = UIHostingController(
+            rootView:
+                UploadWarningView(
+                    onContinue: {
+                        warningVC.dismiss(animated: true) {
+                            self.presentPhotoPicker()
+                        }
+                    },
+                    onCancel: {
+                        warningVC.dismiss(animated: true)
+                    }
+                )
+        )
+        
+        warningVC.modalPresentationStyle = .automatic
+        self.present(warningVC, animated: true)
     }
     
-    return UIImage(cgImage: croppedCGImage, scale: image.scale, orientation: image.imageOrientation)
+    func presentPhotoPicker() {
+        var config = PHPickerConfiguration()
+        config.filter = .images
+        config.selectionLimit = 1
+        
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true, completion: nil)
+        
+        if let selectedImage = info[.originalImage] as? UIImage {
+            delegate?.didCapture(image: selectedImage)
+        }
+    }
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true, completion: nil)
+    }
+    
+    func showPreview() {
+        let previewVC = UIHostingController(
+            rootView:
+                PreviewPhotoView(
+                    image: Binding<UIImage?>(
+                        get: { self.selectedImage },
+                        set: { self.selectedImage = $0 }
+                    ),
+                    
+                    onReupload: {
+                        self.selectedImage = nil
+                        self.openPhotoLibrary()
+                    },
+                    onUse: {
+                        if let image = self.selectedImage {
+                            self.onImageConfirmed?(image) // Kirim ke parent
+                        }
+                    }
+                )
+        )
+        self.present(previewVC, animated: true)
+    }
 }
 
-//func cropCapturedImageToOverlay(_ image: UIImage) -> UIImage? {
-//    guard let cgImage = image.cgImage else { return nil }
-//
-//    // 🔥 Gunakan self.previewLayer
-//    let previewSize = self.previewLayer.bounds.size
-//
-//    let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
-//
-//    let scaleX = imageSize.width / previewSize.width
-//    let scaleY = imageSize.height / previewSize.height
-//
-//    let frameSize = previewSize.width - 50
-//    let originX = (previewSize.width - frameSize) / 2
-//    let originY = (previewSize.height - frameSize) / 2
-//
-//    let cropRect = CGRect(
-//        x: originX * scaleX,
-//        y: originY * scaleY,
-//        width: frameSize * scaleX,
-//        height: frameSize * scaleY
-//    ).integral
-//
-//    guard let cropped = cgImage.cropping(to: cropRect) else { return nil }
-//
-//    return UIImage(cgImage: cropped, scale: image.scale, orientation: image.imageOrientation)
-//}
+/// cropping pictures from gallery
+extension CameraViewController {
+    
+    func cropViewController(_ cropViewController: TOCropViewController, didCropTo image: UIImage, with cropRect: CGRect, angle: Int) {
+        cropViewController.dismiss(animated: true) {
+            self.selectedImage = image
+            self.showPreview()
+        }
+    }
+    
+    func presentCropView(for image: UIImage) {
+        let cropView = CropView(
+            image: image,
+            onCrop: { croppedImage in
+                self.dismiss(animated: true) {
+                    self.delegate?.didCapture(image: croppedImage)
+                }
+            },
+            onCancel: {
+                self.dismiss(animated: true, completion: nil)
+            }
+        )
+        
+        let hostingController = UIHostingController(rootView: cropView)
+        hostingController.modalPresentationStyle = .fullScreen
+        self.present(hostingController, animated: true)
+    }
+}
+
+class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PHPickerViewControllerDelegate, TOCropViewControllerDelegate {
+    
+    @State private var imageToCrop: UIImage?
+    @State private var showCropView = false
+    
+    var captureSession: AVCaptureSession!
+    var photoOutput: AVCapturePhotoOutput!
+    var previewLayer: AVCaptureVideoPreviewLayer!
+    var captureDevice: AVCaptureDevice?
+    weak var delegate: CameraViewControllerDelegate?
+    
+    var isFlashOn: Bool = false
+    var selectedImage: UIImage?
+    var showPreviewAfterCrop = false
+    var onImageConfirmed: ((UIImage) -> Void)?
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupCamera()
+        setupOverlay()
+        
+        if showCropView,
+           let imageCrop = imageToCrop as? UIImage {
+            let cropView = CropView(
+                image: imageCrop,
+                onCrop: { croppedImage in
+                    self.delegate?.didCapture(image: croppedImage)
+                    self.showCropView = false
+                },
+                onCancel: {
+                    self.showCropView = false
+                }
+            )
+            let hostingController = UIHostingController(rootView: cropView)
+            self.present(hostingController, animated: true)
+        }
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        previewLayer?.frame = view.bounds
+        
+        if view.layer.sublayers?.first(where: { $0.name == "cornerLayer" }) == nil {
+            drawCornerFrame(over: view)
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+}

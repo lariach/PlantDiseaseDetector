@@ -90,16 +90,16 @@ struct HomeView: View {
                 return
             }
 
-            guard let detectedObjects = leafDetectorService.detectLeaf(in: image) else {
-                print("❌ FAILED: 'leafDetectorService.detectLeaf(in:)' returned nil. This likely means there was an internal error in your LeafDetectorService model or processing. Exiting.")
-                return
-            }
-            
-        // TODO: add logic to handle no leaves
-            guard !detectedObjects.isEmpty else {
-                print("no leaves detected")
-                return
-            }
+//            guard let detectedObjects = leafDetectorService.detectLeaf(in: image) else {
+//                print("❌ FAILED: 'leafDetectorService.detectLeaf(in:)' returned nil. This likely means there was an internal error in your LeafDetectorService model or processing. Exiting.")
+//                return
+//            }
+//            
+//        // TODO: add logic to handle no leaves
+//            guard !detectedObjects.isEmpty else {
+//                print("no leaves detected")
+//                return
+//            }
         
         let classifyOutput = plantDiseaseService.classify(image: image)
         
