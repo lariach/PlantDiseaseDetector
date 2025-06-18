@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A51893782DFF6EE60096FFA8 /* CropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = A51893772DFF6EE60096FFA8 /* CropViewController */; };
+		A518937A2DFF6EE60096FFA8 /* TOCropViewController in Frameworks */ = {isa = PBXBuildFile; productRef = A51893792DFF6EE60096FFA8 /* TOCropViewController */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		A5E76A9C2DF04574009536EB /* PlantDiseaseDetector.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PlantDiseaseDetector.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -36,6 +41,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A518937A2DFF6EE60096FFA8 /* TOCropViewController in Frameworks */,
+				A51893782DFF6EE60096FFA8 /* CropViewController in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +85,8 @@
 			);
 			name = PlantDiseaseDetector;
 			packageProductDependencies = (
+				A51893772DFF6EE60096FFA8 /* CropViewController */,
+				A51893792DFF6EE60096FFA8 /* TOCropViewController */,
 			);
 			productName = PlantDiseaseDetector;
 			productReference = A5E76A9C2DF04574009536EB /* PlantDiseaseDetector.app */;
@@ -107,6 +116,9 @@
 			);
 			mainGroup = A5E76A932DF04574009536EB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A51893762DFF6EE60096FFA8 /* XCRemoteSwiftPackageReference "TOCropViewController" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A5E76A9D2DF04574009536EB /* Products */;
 			projectDirPath = "";
@@ -345,6 +357,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A51893762DFF6EE60096FFA8 /* XCRemoteSwiftPackageReference "TOCropViewController" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/TimOliver/TOCropViewController";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A51893772DFF6EE60096FFA8 /* CropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A51893762DFF6EE60096FFA8 /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = CropViewController;
+		};
+		A51893792DFF6EE60096FFA8 /* TOCropViewController */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A51893762DFF6EE60096FFA8 /* XCRemoteSwiftPackageReference "TOCropViewController" */;
+			productName = TOCropViewController;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A5E76A942DF04574009536EB /* Project object */;
 }

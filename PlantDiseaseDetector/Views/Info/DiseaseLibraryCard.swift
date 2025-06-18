@@ -10,9 +10,7 @@ import Foundation
 
 struct DiseaseLibraryCard: View {
     let disease: Disease
-    
     var probability: Double? = nil
-
     var cardSize: CGSize = CGSize(width: 180, height: 170)
     
     var body: some View {

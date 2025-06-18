@@ -10,31 +10,14 @@ import UIKit
 import AVFoundation
 import SwiftUI
 import PhotosUI
+import TOCropViewController
 
 protocol CameraViewControllerDelegate: AnyObject {
     func didCapture(image: UIImage)
     func didCancel()
 }
 
-class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PHPickerViewControllerDelegate {
-    
-    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
-        picker.dismiss(animated: true)
-
-        guard let itemProvider = results.first?.itemProvider,
-              itemProvider.canLoadObject(ofClass: UIImage.self) else {
-            return
-        }
-
-        itemProvider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
-            guard let self = self,
-                  let uiImage = image as? UIImage else { return }
-
-            DispatchQueue.main.async {
-                self.presentCropView(for: uiImage)
-            }
-        }
-    }
+class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, PHPickerViewControllerDelegate, TOCropViewControllerDelegate {
     
     func presentCropView(for image: UIImage) {
             let cropView = CropView(
@@ -57,10 +40,10 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
             hostingController.modalPresentationStyle = .fullScreen
             self.present(hostingController, animated: true)
         }
-
     
     @State private var imageToCrop: UIImage?
     @State private var showCropView = false
+    
     
     var captureSession: AVCaptureSession!
     var photoOutput: AVCapturePhotoOutput!
@@ -69,6 +52,9 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
     weak var delegate: CameraViewControllerDelegate?
     
     var isFlashOn: Bool = false
+    var selectedImage: UIImage?
+    var showPreviewAfterCrop = false
+    var onImageConfirmed: ((UIImage) -> Void)?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -101,43 +87,32 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(true, animated: false)
+    }
+
     func setupCamera() {
+        captureSession = AVCaptureSession()
+        captureSession.sessionPreset = .photo
+        
+        guard let camera = AVCaptureDevice.default(for: .video),
+              let input = try? AVCaptureDeviceInput(device: camera),
+              captureSession.canAddInput(input) else { return }
+        
+        captureDevice = camera
+        captureSession.addInput(input)
+        
+        photoOutput = AVCapturePhotoOutput()
+        captureSession.addOutput(photoOutput)
+        
+        previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+        previewLayer.videoGravity = .resizeAspectFill
+        previewLayer.frame = view.bounds
+        view.layer.insertSublayer(previewLayer, at: 0)
+        
         DispatchQueue.global(qos: .userInitiated).async {
-            let session = AVCaptureSession()
-            session.sessionPreset = .photo
-
-            guard let camera = AVCaptureDevice.default(for: .video),
-                  let input = try? AVCaptureDeviceInput(device: camera),
-                  session.canAddInput(input) else {
-                print("❌ Failed to create camera input")
-                return
-            }
-
-            session.addInput(input)
-
-            let output = AVCapturePhotoOutput()
-            guard session.canAddOutput(output) else {
-                print("❌ Failed to add photo output")
-                return
-            }
-
-            session.addOutput(output)
-
-            DispatchQueue.main.async {
-                self.captureSession = session
-                self.photoOutput = output
-                self.captureDevice = camera
-
-                let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-                previewLayer.videoGravity = .resizeAspectFill
-                previewLayer.frame = self.view.bounds
-                self.previewLayer = previewLayer
-                self.view.layer.insertSublayer(previewLayer, at: 0)
-
-                DispatchQueue.global(qos: .userInitiated).async {
-                    session.startRunning()
-                }
-            }
+            self.captureSession.startRunning()
         }
     }
     
@@ -149,7 +124,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         cancel.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         view.addSubview(cancel)
     }
-    
+
     func addHelpBtn() {
         let helpBtn = UIButton(type: .system)
         helpBtn.setImage(UIImage(systemName: "questionmark.circle"), for: .normal)
@@ -206,7 +181,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
     
     @objc func showHelpSheet() {
         let helpVC = UIHostingController(rootView: HowToTakePictureView())
-        helpVC.modalPresentationStyle = .automatic // or .pageSheet, .formSheet, etc.
+        helpVC.modalPresentationStyle = .automatic
         present(helpVC, animated: true, completion: nil)
     }
     
@@ -218,14 +193,11 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         
         do {
             try device.lockForConfiguration()
-            
             if isFlashOn {
-                try device.setTorchModeOn(level: 1.0) // full brightness
+                try device.setTorchModeOn(level: 1.0)
             } else {
                 device.torchMode = .off
             }
-            
-            device.unlockForConfiguration()
         } catch {
             print("Torch could not be used: \(error)")
         }
@@ -233,21 +205,21 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
     
     @objc func openPhotoLibrary() {
         var warningVC: UIHostingController<UploadWarningView>!
-
+        
         warningVC = UIHostingController(rootView:
-            UploadWarningView(
-                onContinue: {
-                    warningVC.dismiss(animated: true) {
-                        self.presentPhotoPicker()
-                    }
-                },
-                onCancel: {
-                    warningVC.dismiss(animated: true)
-                }
-            )
+                                            UploadWarningView(
+                                                onContinue: {
+                                                    warningVC.dismiss(animated: true) {
+                                                        self.presentPhotoPicker()
+                                                    }
+                                                },
+                                                onCancel: {
+                                                    warningVC.dismiss(animated: true)
+                                                }
+                                            )
         )
-
-        warningVC.modalPresentationStyle = UIModalPresentationStyle.automatic
+        
+        warningVC.modalPresentationStyle = .automatic
         self.present(warningVC, animated: true)
     }
     
@@ -261,11 +233,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         present(picker, animated: true)
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: false)
-    }
-    
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true, completion: nil)
 
@@ -277,7 +244,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
     }
-
     
     func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         guard let data = photo.fileDataRepresentation(),
@@ -308,13 +274,7 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         } else {
             croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer) // simpler crop if connections are complex
         }
-        
-        if captureDevice?.hasTorch == true {
-            try? captureDevice?.lockForConfiguration()
-            captureDevice?.torchMode = .off
-            captureDevice?.unlockForConfiguration()
-        }
-                
+                        
         if let realCroppedImage = croppedImage as? UIImage {
             delegate?.didCapture(image: realCroppedImage)
             return
@@ -382,5 +342,124 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         cornerLayer.path = path.cgPath
         parentView.layer.addSublayer(cornerLayer)
     }
+    
+    func cropViewController(_ cropViewController: TOCropViewController, didCropTo image: UIImage, with cropRect: CGRect, angle: Int) {
+        cropViewController.dismiss(animated: true) {
+            self.selectedImage = image
+            self.showPreview()
+        }
+    }
+    
+    func showPreview() {
+        let previewVC = UIHostingController(rootView:
+                                                PreviewPhotoView(
+                                                    image: Binding<UIImage?>(
+                                                        get: { self.selectedImage },
+                                                        set: { self.selectedImage = $0 }
+                                                    ),
+                                                    
+                                                    onReupload: {
+                                                        self.selectedImage = nil
+                                                        self.openPhotoLibrary()
+                                                    },
+                                                    onUse: {
+                                                        if let image = self.selectedImage {
+                                                            self.onImageConfirmed?(image) // Kirim ke parent
+                                                        }
+                                                    }
+                                                )
+        )
+        self.present(previewVC, animated: true)
+    }
+    
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        
+        guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
+        
+        provider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+            guard let self = self, let uiImage = image as? UIImage else { return }
+            
+            DispatchQueue.main.async {
+                self.selectedImage = uiImage
+                let cropVC = TOCropViewController(croppingStyle: .default, image: uiImage)
+                cropVC.delegate = self
+                cropVC.aspectRatioPreset = .presetSquare
+                cropVC.aspectRatioLockEnabled = true
+                cropVC.resetAspectRatioEnabled = false
+                self.present(cropVC, animated: true)
+            }
+        }
+    }
+    
+    func cropCapturedImageToOverlay(_ image: UIImage) -> UIImage? {
+        guard let cgImage = image.cgImage else { return nil }
+
+        // 🔥 Gunakan self.previewLayer
+        let previewSize = self.previewLayer.bounds.size
+
+        let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
+
+        let scaleX = imageSize.width / previewSize.width
+        let scaleY = imageSize.height / previewSize.height
+
+        let frameSize = previewSize.width - 50
+        let originX = (previewSize.width - frameSize) / 2
+        let originY = (previewSize.height - frameSize) / 2
+
+        let cropRect = CGRect(
+            x: originX * scaleX,
+            y: originY * scaleY,
+            width: frameSize * scaleX,
+            height: frameSize * scaleY
+        ).integral
+
+        guard let cropped = cgImage.cropping(to: cropRect) else { return nil }
+
+        return UIImage(cgImage: cropped, scale: image.scale, orientation: image.imageOrientation)
+    }
 
 }
+
+func cropCenterSquare(from image: UIImage) -> UIImage? {
+    let sourceSize = image.size
+    let sideLength = min(sourceSize.width, sourceSize.height)
+    
+    let xOffset = (sourceSize.width - sideLength) / 2.0
+    let yOffset = (sourceSize.height - sideLength) / 2.0
+    
+    let cropRect = CGRect(x: xOffset, y: yOffset, width: sideLength, height: sideLength).integral
+    
+    guard let cgImage = image.cgImage, let croppedCGImage = cgImage.cropping(to: cropRect) else {
+        return nil
+    }
+    
+    return UIImage(cgImage: croppedCGImage, scale: image.scale, orientation: image.imageOrientation)
+}
+
+//func cropCapturedImageToOverlay(_ image: UIImage) -> UIImage? {
+//    guard let cgImage = image.cgImage else { return nil }
+//
+//    // 🔥 Gunakan self.previewLayer
+//    let previewSize = self.previewLayer.bounds.size
+//
+//    let imageSize = CGSize(width: cgImage.width, height: cgImage.height)
+//
+//    let scaleX = imageSize.width / previewSize.width
+//    let scaleY = imageSize.height / previewSize.height
+//
+//    let frameSize = previewSize.width - 50
+//    let originX = (previewSize.width - frameSize) / 2
+//    let originY = (previewSize.height - frameSize) / 2
+//
+//    let cropRect = CGRect(
+//        x: originX * scaleX,
+//        y: originY * scaleY,
+//        width: frameSize * scaleX,
+//        height: frameSize * scaleY
+//    ).integral
+//
+//    guard let cropped = cgImage.cropping(to: cropRect) else { return nil }
+//
+//    return UIImage(cgImage: cropped, scale: image.scale, orientation: image.imageOrientation)
+//}

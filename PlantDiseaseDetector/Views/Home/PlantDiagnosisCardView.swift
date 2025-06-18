@@ -104,7 +104,7 @@ struct PlantDiagnosisCardView: View {
             disease: .rust,
             probability: 0.95,
             diseases: [],
-            photo: UIImage(systemName: "photo") ?? UIImage(),
+            photo: UIImage(systemName: "photo") ?? UIImage()
         ),
         onDelete: {}
     )

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct HistoryCardView: View {
     let history: History
@@ -31,7 +32,6 @@ struct HistoryCardView: View {
                     HStack {
                         Image(systemName: "clock")
                             .font(.system(size: 14))
-                        
                         Text(
                             history.date
                                 .formatted(date: .abbreviated, time: .shortened)

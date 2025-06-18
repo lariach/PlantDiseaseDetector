@@ -28,7 +28,6 @@ struct HomeView: View {
     }()
     
     @Environment(\.modelContext) var context
-    
     @Query(filter: #Predicate<PlantDiagnosis> { _ in true },
            sort: [SortDescriptor(\PlantDiagnosis.createdAt, order: .reverse)]) var plantDiagnosisList: [PlantDiagnosis]
     
