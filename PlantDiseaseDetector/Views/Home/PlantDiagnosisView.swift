@@ -93,7 +93,16 @@ struct PlantDiagnosisView: View {
             }
         }
         .background(Color("color-BgPage"))
-        .navigationTitle("Diagnosis Result")
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Disease Detail")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color("color-font-green"))
+            }
+        }
+        .toolbarBackground(Color("color-BgPage"), for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .navigationBarTitleDisplayMode(.inline)
         .onAppear() {
             print(plantDiagnosis.diseases)
