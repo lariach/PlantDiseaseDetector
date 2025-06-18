@@ -71,7 +71,7 @@ struct PlantDiagnosisView: View {
                                 .padding(.leading, 10)
                             
                             
-                            LazyVGrid(columns: columns, spacing: 16) {
+                            LazyVGrid(columns: columns, spacing: 6) {
                                 
                                 ForEach(plantDiagnosis.diseases, id: \.disease) { plantDiag in
                                     if let disease = diseaseDict[plantDiag.disease] {
