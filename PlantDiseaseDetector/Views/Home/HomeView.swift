@@ -16,7 +16,7 @@ struct HomeView: View {
     @State private var showCamera: Bool = false
     @State private var plantDiseaseName: String?
     @State private var plantDiseaseProbability: Double?
-    @State private var noLeaveAlert: Bool = false
+    @State private var noLeavesAlert: Bool = false
     
     private let plantDiseaseService: PlantDiseaseService = PlantDiseaseService()
     
@@ -90,17 +90,17 @@ struct HomeView: View {
             return
         }
         
-//        /// object detection; check whether a leaf is present in the provided photo
-//        guard let detectedObjects = leafDetectorService.detectLeaf(in: image) else {
-//            print("❌ FAILED: 'leafDetectorService.detectLeaf(in:)' returned nil. This likely means there was an internal error in your LeafDetectorService model or processing. Exiting.")
-//            return
-//        }
-//        
-//        // TODO: add logic to handle no leaves
-//        guard !detectedObjects.isEmpty else {
-//            print("no leaves detected")
-//            return
-//        }
+        /// object detection; check whether a leaf is present in the provided photo
+        guard let detectedObjects = leafDetectorService.detectLeaf(in: image) else {
+            print("❌ FAILED: 'leafDetectorService.detectLeaf(in:)' returned nil. This likely means there was an internal error in your LeafDetectorService model or processing. Exiting.")
+            return
+        }
+        
+        guard !detectedObjects.isEmpty else {
+            print("no leaves detected")
+            noLeavesAlert = true
+            return
+        }
         
         let classifyOutput = plantDiseaseService.classify(image: image)
         
@@ -190,9 +190,9 @@ struct HomeView: View {
                 self.selectedImage = confirmedImage
             }
         }
-        .alert("No plant detected in the picture!", isPresented: $noLeaveAlert) {
+        .alert("No plant detected in the picture!", isPresented: $noLeavesAlert) {
             Button("Go to Clinic", role: .cancel) {
-                noLeaveAlert = false
+                noLeavesAlert = false
             }
             Button("Retake", role: .destructive) {
                 showCamera = true
