@@ -54,7 +54,9 @@ struct HistoryDetailView: View {
                         
                         HStack{
                             Spacer()
-                            DiseaseLibraryCard(disease: diseaseList[0], cardSize: CGSize(width: 353, height: 300))
+                            DiseaseLibraryCard(
+                                disease: diseaseList[0],
+                                cardSize: CGSize(width: 353, height: 300))
                             Spacer()
                         }
                     }

@@ -44,6 +44,42 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
     
     @State private var imageToCrop: UIImage?
     @State private var showCropView = false
+  
+        itemProvider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+            guard let self = self,
+                  let uiImage = image as? UIImage else { return }
+
+            DispatchQueue.main.async {
+                self.presentCropView(for: uiImage)
+            }
+        }
+    }
+    
+    func presentCropView(for image: UIImage) {
+            let cropView = CropView(
+                image: image,
+                onCrop: { croppedImage in
+                    // When cropping is done, dismiss the crop view
+                    self.dismiss(animated: true) {
+                        // And pass the cropped image to the original delegate
+                        self.delegate?.didCapture(image: croppedImage)
+                    }
+                },
+                onCancel: {
+                    // If the user cancels, just dismiss the crop view
+                    self.dismiss(animated: true, completion: nil)
+                }
+            )
+            
+            // Present the CropView modally using a UIHostingController
+            let hostingController = UIHostingController(rootView: cropView)
+            hostingController.modalPresentationStyle = .fullScreen
+            self.present(hostingController, animated: true)
+        }
+
+    
+    @State private var imageToCrop: UIImage?
+    @State private var showCropView = false
     
     var captureSession: AVCaptureSession!
     var photoOutput: AVCapturePhotoOutput!
@@ -60,6 +96,22 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         super.viewDidLoad()
         setupCamera()
         setupOverlay()
+        
+        if showCropView,
+           let imageCrop = imageToCrop as? UIImage {
+            let cropView = CropView(
+                image: imageCrop,
+                onCrop: { croppedImage in
+                    self.delegate?.didCapture(image: croppedImage)
+                    self.showCropView = false
+                },
+                onCancel: {
+                    self.showCropView = false
+                }
+            )
+            let hostingController = UIHostingController(rootView: cropView)
+            self.present(hostingController, animated: true)
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -109,7 +161,6 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
         cancel.addTarget(self, action: #selector(cancelTapped), for: .touchUpInside)
         view.addSubview(cancel)
     }
-
     func addHelpBtn() {
         let helpBtn = UIButton(type: .system)
         helpBtn.setImage(UIImage(systemName: "questionmark.circle"), for: .normal)
@@ -258,9 +309,13 @@ class CameraViewController: UIViewController, AVCapturePhotoCaptureDelegate, UII
             croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer, outputConnection: outputConnection, deviceResolution: captureDeviceResolution, deviceOrientation: orientation)
         } else {
             croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer) // simpler crop if connections are complex
-        }
         
-                
+        if captureDevice?.hasTorch == true {
+            try? captureDevice?.lockForConfiguration()
+            captureDevice?.torchMode = .off
+            captureDevice?.unlockForConfiguration()
+        }
+             
         if let realCroppedImage = croppedImage as? UIImage {
             delegate?.didCapture(image: realCroppedImage)
             return

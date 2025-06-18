@@ -85,6 +85,7 @@ struct ContentView: View {
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
         }
+        .tint(Color("color-font-green"))
     }
 }
 
