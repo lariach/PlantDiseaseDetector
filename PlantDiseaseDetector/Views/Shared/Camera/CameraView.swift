@@ -39,7 +39,7 @@ struct CameraView: UIViewControllerRepresentable {
             self.parent = parent
         }
 
-        func didCapture(image: UIImage) {
+        func didSelect(image: UIImage) {
             parent.image = image
             parent.dismiss()
         }

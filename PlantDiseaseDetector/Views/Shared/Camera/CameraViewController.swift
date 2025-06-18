@@ -13,7 +13,7 @@ import PhotosUI
 import TOCropViewController
 
 protocol CameraViewControllerDelegate: AnyObject {
-    func didCapture(image: UIImage)
+    func didSelect(image: UIImage)
     func didCancel()
 }
 
@@ -206,7 +206,10 @@ extension CameraViewController {
         
         // convert cropRect from previewLayer coordinates to image coordinates
         guard let previewLayer = self.previewLayer else {
-            delegate?.didCapture(image: image) // Fallback to original image
+            DispatchQueue.main.async {
+                self.selectedImage = image
+                self.showPreview()
+            }
             return
         }
         
@@ -223,12 +226,14 @@ extension CameraViewController {
             croppedImage = image.cropped(to: cropRect, previewLayer: previewLayer) // simpler crop if connections are complex
         }
         
-        if let realCroppedImage = croppedImage as? UIImage {
-            delegate?.didCapture(image: realCroppedImage)
-            return
+        DispatchQueue.main.async {
+            if let realCroppedImg = croppedImage {
+                self.selectedImage = realCroppedImg
+            } else {
+                self.selectedImage = image
+            }
+            self.showPreview()
         }
-        
-        delegate?.didCapture(image: image)
     }
 }
 
@@ -289,7 +294,7 @@ extension CameraViewController {
         picker.dismiss(animated: true, completion: nil)
         
         if let selectedImage = info[.originalImage] as? UIImage {
-            delegate?.didCapture(image: selectedImage)
+            delegate?.didSelect(image: selectedImage)
         }
     }
     
@@ -313,7 +318,7 @@ extension CameraViewController {
             image: image,
             onCrop: { croppedImage in
                 self.dismiss(animated: true) {
-                    self.delegate?.didCapture(image: croppedImage)
+                    self.delegate?.didSelect(image: croppedImage)
                 }
             },
             onCancel: {
