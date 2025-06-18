@@ -96,9 +96,15 @@ struct HomeView: View {
     
     private let plantDiseaseService: PlantDiseaseService = PlantDiseaseService()
     
+    private let leafDetectorService: LeafDetectorService = {
+        do {
+            return try LeafDetectorService()
+        } catch {
+            fatalError("Failed to load LeafDetectionService model: \(error.localizedDescription)")
+        }
+    }()
     
     @Environment(\.modelContext) var context
-    
     @Query var plantDiagnosisList: [PlantDiagnosis]
     
     func create(_ plantDiagnosis: PlantDiagnosis) {
@@ -141,11 +147,26 @@ struct HomeView: View {
     }
     
     func getPlantDisease() {
-        guard let image = selectedImage else { return }
+
+            guard let image = selectedImage else {
+                print("selectedImage' is nil")
+                return
+            }
+
+            guard let detectedObjects = leafDetectorService.detectLeaf(in: image) else {
+                print("❌ FAILED: 'leafDetectorService.detectLeaf(in:)' returned nil. This likely means there was an internal error in your LeafDetectorService model or processing. Exiting.")
+                return
+            }
+            
+        // TODO: add logic to handle no leaves
+            guard !detectedObjects.isEmpty else {
+                print("no leaves detected")
+                return
+            }
         
-        let output = plantDiseaseService.classify(image: image)
+        let classifyOutput = plantDiseaseService.classify(image: image)
         
-        if let plantDiseaseOutput = output.prediction {
+        if let plantDiseaseOutput = classifyOutput.prediction {
             print("Plant Disease Output: \(plantDiseaseOutput)")
             
             create(plantDiseaseOutputToPlantDiagnosis(
