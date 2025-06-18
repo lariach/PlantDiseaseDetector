@@ -169,7 +169,7 @@ final class LeafDetectorService: ObservableObject {
             
             if detectedObjects.isEmpty {
                 print("No leaf objects detected")
-                return nil
+                return []
             } else {
                 print("Detected leaf object")
                 return detectedObjects
