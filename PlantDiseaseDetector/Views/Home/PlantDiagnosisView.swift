@@ -131,7 +131,7 @@ struct PlantDiagnosisView: View {
                                 
                                 Text("Inspect your plants regularly. At the first sign of disease, remove affected parts and, if needed, apply organic treatments like neem oil or beneficial microbes.")
                                 
-                                Spacer().frame(height: 10)   
+                                Spacer().frame(height: 10)
                             }
                             .padding(20)
                             .font(.subheadline)
