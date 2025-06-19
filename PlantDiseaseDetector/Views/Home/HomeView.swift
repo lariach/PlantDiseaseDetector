@@ -178,7 +178,6 @@ struct HomeView: View {
                 }
             }
             .padding(.horizontal, 20)
-            
             AddPhotoFAB(
                 onTakePict: {
                     showCamera = true
@@ -186,7 +185,9 @@ struct HomeView: View {
             )
 
         }
-        .fullScreenCover(isPresented: $showCamera, onDismiss: getPlantDisease) {
+        .fullScreenCover(isPresented: $showCamera, onDismiss: {
+            if(self.selectedImage != nil){ getPlantDisease() }
+        }) {
             CameraView(image: $selectedImage) { confirmedImage in
                 self.selectedImage = confirmedImage
             }.ignoresSafeArea()

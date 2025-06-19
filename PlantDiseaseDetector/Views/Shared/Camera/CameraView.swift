@@ -45,6 +45,7 @@ struct CameraView: UIViewControllerRepresentable {
         }
 
         func didCancel() {
+            parent.image = nil
             parent.dismiss()
         }
     }

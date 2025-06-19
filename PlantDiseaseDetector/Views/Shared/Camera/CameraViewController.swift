@@ -174,6 +174,8 @@ extension CameraViewController {
     }
     
     @objc func cancelTapped() {
+        self.selectedImage = nil
+        print("selectedImage after cancel: \(self.selectedImage)")
         delegate?.didCancel()
     }
     
