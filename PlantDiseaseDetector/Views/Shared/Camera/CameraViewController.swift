@@ -382,10 +382,9 @@ extension CameraViewController {
                         get: { self.selectedImage },
                         set: { self.selectedImage = $0 }
                     ),
-                    
                     onReupload: {
                         self.selectedImage = nil
-                        self.openPhotoLibrary()
+                        self.dismiss(animated: true)
                     },
                     onUse: {
                         if let image = self.selectedImage {
