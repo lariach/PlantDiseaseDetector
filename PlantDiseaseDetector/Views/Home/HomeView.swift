@@ -10,7 +10,7 @@ import PhotosUI
 import SwiftData
 
 struct HomeView: View {
-
+    
     @State private var selectedImage: UIImage?
     
     @State private var showCamera: Bool = false
@@ -79,7 +79,7 @@ struct HomeView: View {
                 }
             }
         }
-
+        
         return PlantDiagnosis(
             disease: DiseaseEnum(rawValue: targetDisease) ?? .rust,
             probability: targetProbability,
@@ -202,7 +202,7 @@ struct HomeView: View {
                     showCamera = true
                 }
             )
-
+            
         }
         .fullScreenCover(isPresented: $showCamera, onDismiss: {
             if(self.selectedImage != nil){ getPlantDisease() }

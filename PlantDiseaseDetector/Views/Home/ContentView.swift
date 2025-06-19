@@ -83,6 +83,14 @@ struct ContentView: View {
                 }
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: CreditsView()){
+                        Image(systemName: "info.circle")
+                            .foregroundColor(Color("color-font-green"))
+                    }
+                }
+            }
         }
         .tint(Color("color-font-green"))
     }
