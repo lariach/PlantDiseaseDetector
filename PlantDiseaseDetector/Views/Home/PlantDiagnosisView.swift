@@ -145,6 +145,7 @@ struct PlantDiagnosisView: View {
                             )
                             .padding(.horizontal, 5)
                             .padding(.top, 10)
+                            .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 4)
                         }
                     } else {
                         VStack(alignment: .leading, spacing: 10) {

@@ -45,10 +45,36 @@ struct DiseaseDetailView: View {
                 
                 VStack(alignment: .leading, spacing: 30) {
                     SectionView(title: "Symptoms", content: disease.symptoms)
+                    
+                    Rectangle()
+                        .frame(width: .infinity, height: 1)
+                        .foregroundStyle(Color.font)
+                        .opacity(0.2)
+                        .padding(.vertical, 10)
+                    
                     SectionView(title: "Causes", content: disease.causes)
+                    
+                    Rectangle()
+                        .frame(width: .infinity, height: 1)
+                        .foregroundStyle(Color.font)
+                        .opacity(0.2)
+                        .padding(.vertical, 10)
+                    
                     SectionView(title: "Treatments", content: disease.treatments)
                 }
                 .padding(20)
+                .background(Color.white)
+                .foregroundColor(Color.font)
+                .frame(maxWidth: .infinity)
+                .cornerRadius(20)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 20)
+                        .stroke(Color.clear)
+                )
+                .padding(.horizontal, 25)
+                .padding(.top, 10)
+                .shadow(color: .black.opacity(0.2), radius: 4, x: 0, y: 4)
+
                 
                 Spacer().frame(height: 30)
             }
