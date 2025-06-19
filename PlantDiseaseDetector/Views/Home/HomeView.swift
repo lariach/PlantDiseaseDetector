@@ -60,18 +60,20 @@ struct HomeView: View {
         let targetDisease = plantDiseaseOutput.target
         let targetProbability = plantDiseaseOutput.targetProbability[targetDisease] ?? 0.0
         
-        if targetProbability < 0.9 {
+        if targetProbability < 0.6 {
             for (disease, probability) in plantDiseaseOutput.targetProbability {
                 
                 if disease == plantDiseaseOutput.target {
                     continue
                 }
                 
-                if let disease = DiseaseEnum(rawValue: disease) {
-                    diseases.append(DiseaseWrapper(
-                        disease: disease,
-                        probability: probability
-                    ))
+                if targetProbability - probability <= 0.25 {
+                    if let disease = DiseaseEnum(rawValue: disease) {
+                        diseases.append(DiseaseWrapper(
+                            disease: disease,
+                            probability: probability
+                        ))
+                    }
                 }
             }
         }
