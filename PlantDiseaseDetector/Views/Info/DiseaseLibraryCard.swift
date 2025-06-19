@@ -31,21 +31,22 @@ struct DiseaseLibraryCard: View {
                 .frame(height: 60)
                 .cornerRadius(16)
 
-                if let probability = probability {
+//                if let probability = probability {
+//                    
+//                    Text("\(disease.name) (\(String(format: "%.1f", probability * 100))%)")
+//                    Text(disease.name")
+//                        .font(.system(size: 14, weight: .semibold))
+//                        .foregroundColor(Color.background)
+//                        .padding(.leading, 12)
+//                        .padding(.bottom, 12)
                     
-                    Text("\(disease.name) (\(String(format: "%.1f", probability * 100))%)")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Color.background)
-                        .padding(.leading, 12)
-                        .padding(.bottom, 12)
-                    
-                } else {
+//                } else {
                     Text(disease.name)
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(Color.background)
                         .padding(.leading, 12)
                         .padding(.bottom, 12)
-                }
+//                }
                 
             }
             .frame(width: cardSize.width, height: cardSize.height)
