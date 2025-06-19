@@ -39,6 +39,7 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             ZStack {
+                Color.background.edgesIgnoringSafeArea(.all)
                 
                 VStack(spacing: 0) {
                     Group {
@@ -52,8 +53,6 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.white)
                     .ignoresSafeArea(.all, edges: .bottom)
-                    
-                    Spacer()
                     
                     HStack {
                         Spacer()

@@ -32,15 +32,17 @@ struct HomeView: View {
     @Query(filter: #Predicate<PlantDiagnosis> { _ in true },
            sort: [SortDescriptor(\PlantDiagnosis.createdAt, order: .reverse)]) var plantDiagnosisList: [PlantDiagnosis]
     
-    func create(_ plantDiagnosis: PlantDiagnosis) {
+    func create(_ plantDiagnosis: PlantDiagnosis) -> PlantDiagnosis? {
         do {
             context.insert(plantDiagnosis)
             try context.save()
             
             print("Plant record created successfully!")
+            return plantDiagnosis
         } catch {
             print("Error creating parking record: \(error)")
         }
+        return nil
     }
     
     func delete(_ plantDiagnosis: PlantDiagnosis) {
@@ -86,6 +88,9 @@ struct HomeView: View {
         )
     }
     
+    @State private var newPlantDiagnosis: PlantDiagnosis? = nil
+    @State private var navigateToNewPlantDiagnosis: Bool = false
+    
     func getPlantDisease() {
         guard let image = selectedImage else {
             return
@@ -108,16 +113,30 @@ struct HomeView: View {
         if let plantDiseaseOutput = classifyOutput.prediction {
             print("Plant Disease Output: \(plantDiseaseOutput)")
             
-            create(plantDiseaseOutputToPlantDiagnosis(
+            newPlantDiagnosis = create(plantDiseaseOutputToPlantDiagnosis(
                 plantDiseaseOutput: plantDiseaseOutput,
                 photo: image
             ))
+            
+            navigateToNewPlantDiagnosis = true
         }
     }
     
     var body: some View{
         ZStack {
             Color("color-BgPage").ignoresSafeArea()
+            
+            NavigationLink(
+                destination: Group {
+                    if let diagnosis = newPlantDiagnosis {
+                        PlantDiagnosisView(plantDiagnosis: diagnosis)
+                    } else {
+                        EmptyView()
+                    }
+                },
+                isActive: $navigateToNewPlantDiagnosis,
+                label: { EmptyView() }
+            )
             
             VStack(alignment: .leading) {
                 VStack(alignment: .leading) {
