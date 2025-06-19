@@ -88,7 +88,6 @@ struct HomeView: View {
     
     func getPlantDisease() {
         guard let image = selectedImage else {
-            print("selectedImage' is nil")
             return
         }
         
@@ -190,7 +189,7 @@ struct HomeView: View {
         .fullScreenCover(isPresented: $showCamera, onDismiss: getPlantDisease) {
             CameraView(image: $selectedImage) { confirmedImage in
                 self.selectedImage = confirmedImage
-            }
+            }.ignoresSafeArea()
         }
         .alert("No plant detected in the picture!", isPresented: $noLeavesAlert) {
             Button("Go to Clinic", role: .cancel) {
