@@ -395,6 +395,7 @@ extension CameraViewController {
                     }
                 )
         )
+        previewVC.modalPresentationStyle = .fullScreen
         self.present(previewVC, animated: true)
     }
 
